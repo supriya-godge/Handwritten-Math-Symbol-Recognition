@@ -13,25 +13,7 @@ import segment_extract_features as se_features
 
 def main(ar):
 
-    all_inkml = get_scaled_inkml(ar, 100)
-
-    se_features.rough_trial(all_inkml)
-
-    pr_utils.print_to_lg(all_inkml)
-
-
-
-def get_scaled_inkml(ar, max_coord=100):
-    """
-    Take in a root directory path and return a list
-    of Inkml objects with scaled coordinates
-    representing each inkml file found in the root
-    path.
-
-    :param ar: Root directory path
-    :param max_coord: maximum scaled y coordinate. Default is 100
-    :return: list of Inkml objects
-    """
+    max_coord = 100
 
     # get a list of Inkml objects
     all_inkml = sr_files.get_all_inkml_files(ar)
@@ -39,7 +21,17 @@ def get_scaled_inkml(ar, max_coord=100):
     # scale coordinates in all Inkml objects
     pr_utils.scale_all_inkml(all_inkml, max_coord)
 
-    return all_inkml
+    # segment into objects
+    se_features.rough_trial(all_inkml)
+
+    # scale each segmented object
+    pr_utils.scale_all_segments(all_inkml, max_coord)
+
+    # view symbols
+    pr_utils.print_view_symbols_html(all_inkml, max_coord)
+
+    #pr_utils.print_to_lg(all_inkml)
+
 
 
 if __name__ == '__main__':

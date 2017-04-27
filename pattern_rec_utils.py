@@ -17,16 +17,41 @@ def scale_all_inkml(all_inkml, max_coord):
 
     for inkml in all_inkml:
 
-        # list to store all strokes in this Inkml object
-        all_strokes = []
-        for trace_id, coords in inkml.strokes.items():
-            all_strokes.append(coords)
+        # store all strokes in this Inkml object
+        all_strokes = list(inkml.strokes.values())
 
         # get the scaled coordinates for this Inkml object
         all_scaled_strokes = get_scaled_symbol(all_strokes, max_coord)
 
         # update this Inkml object with scaled coordinates
         inkml.update_strokes(all_scaled_strokes)
+
+
+def scale_all_segments(all_inkml, max_coord):
+    """
+    Scale and update each segmented symbol coordinates
+    in an Inkml object individually.
+
+    :param all_inkml: list of Inkml objects
+    :param max_coord: maximum scaled y coordinate
+    :return: None
+    """
+
+    # for each inkml file
+    for inkml in all_inkml:
+        # for each segment in an inkml file
+        for obj in inkml.objects:
+            # get all trace coordinates for this segment
+            symbol_strokes = []
+            for trace_id in obj.trace_ids:
+                symbol_strokes.append(inkml.strokes[trace_id])
+
+            # get the scaled coordinates for this segmented symbol
+            symbol_strokes = get_scaled_symbol(symbol_strokes, max_coord)
+
+            # update this segmented symbol with scaled coordinates
+            for index, trace_id in enumerate(obj.trace_ids):
+                inkml.strokes[trace_id] = symbol_strokes[index]
 
 
 def get_scaled_symbol(strokes, max_coord):
@@ -46,15 +71,12 @@ def get_scaled_symbol(strokes, max_coord):
     temp = []
 
     for stroke in strokes:
-        # fetch each data point coordinate and append to lists
-        stroke = stroke.strip('\n').split(',')
         x = []
         y = []
 
-        for point in stroke:
-            point = [val for val in point.split(' ') if len(val) > 0]
-            x.append(float(point[0]))
-            y.append(float(point[1]))
+        for pointX, pointY in stroke:
+            x.append(pointX)
+            y.append(pointY)
 
         # compute the minimum and maximum of all x and y coordinates
         min_x = min(min(x), min_x)
