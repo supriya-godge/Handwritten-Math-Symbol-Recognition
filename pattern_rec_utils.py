@@ -89,6 +89,20 @@ def get_scaled_symbol(strokes, max_coord):
     return symbol
 
 
+def write_to_lg(all_inkml, path=''):
+    """
+    Write a new .lg file in the Object format for each inkml file.
+
+    :param all_inkml: list of Inkml objects
+    :param path: path to output directory
+    :return: None
+    """
+
+    for inkml in all_inkml:
+        with open(path+inkml.ui+'.lg') as new_file:
+            new_file.write(inkml.get_objects_str)
+
+
 def print_view_symbols_html(all_inkml, max_coord):
     """
     Prints all input strokes as a normalized svg image in html

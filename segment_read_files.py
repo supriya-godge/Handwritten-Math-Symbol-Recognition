@@ -5,7 +5,6 @@ Program to read in INKML files parse stroke coordinates
 @author: Supriya Godge (spg5835@rit.edu)
 """
 
-import sys
 import os
 import re
 from bs4 import BeautifulSoup
