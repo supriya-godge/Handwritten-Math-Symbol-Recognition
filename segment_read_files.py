@@ -59,7 +59,16 @@ def read_file(file_path):
 
     # add stroke information to Inkml object
     for trace in soup.find_all('trace'):
-        inkml.add_stroke(trace.get('id'), trace.string)
+        stroke = trace.string.strip('\n').split(',')
+        x = []
+        y = []
+
+        for point in stroke:
+            point = [val for val in point.split(' ') if len(val) > 0]
+            x.append(float(point[0]))
+            y.append(float(point[1]))
+
+        inkml.add_stroke(trace.get('id'), zip(x, y))
 
     return inkml
 

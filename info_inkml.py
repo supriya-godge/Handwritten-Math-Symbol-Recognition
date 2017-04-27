@@ -38,4 +38,3 @@ class Inkml:
 
         return result
 
-
