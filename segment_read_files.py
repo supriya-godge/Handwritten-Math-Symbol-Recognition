@@ -9,50 +9,70 @@ import sys
 import os
 import re
 from bs4 import BeautifulSoup
+from info_inkml import Inkml
 
 
-def get_all_files_coords(ar):
+def get_all_inkml_files(ar):
     """
+    Recursively open each subdirectory and read each inkml
+    file within. Return a list of Inkml objects created from
+    the files.
 
     :param ar: path to inkml files
-    :return: dict{file_ui: [(trace id, trace coordinates)]}
+    :return: list of Inkml objects
     """
 
     # get individual file path to each inkml file
     all_file_paths = get_all_file_paths(ar)
 
-    # dict of files: file_ui: all_traces[]
-    all_files = {}
+    # populate list with an Inkml object for each file
+    all_inkml = []
     for file_path in all_file_paths:
-        file_ui, all_traces = read_file(file_path)
-        if file_ui is None:
-            continue
-        all_files[file_ui] = all_traces
-        #print(file_ui)
+        inkml = read_file(file_path)
+        if inkml is not None:
+            all_inkml.append(inkml)
 
-    return all_files
+    return all_inkml
 
 
 def read_file(file_path):
+    """
+    Open and read an inkml file. Create an Inkml object with the
+    parsed information.
+
+    :param file_path: file path to inkml file
+    :return: Inkml object
+    """
+
+    # open and read file
     soup = BeautifulSoup(open(file_path), 'lxml')
 
+    # parse file for UI. Return None if not found
     file_ui = soup.find('annotation', {'type': 'UI'})
     if file_ui is not None:
         file_ui = file_ui.string
     else:
         print('Skipping file: ', file_path)
-        return None, None
+        return None
 
+    # create Inkml object
+    inkml = Inkml(file_ui)
 
-    # list of tuples: ((str)trace id, trace coordinates)
-    all_traces = []
+    # add stroke information to Inkml object
     for trace in soup.find_all('trace'):
-        all_traces.append((trace.get('id'), trace.string))
+        inkml.add_stroke(trace.get('id'), trace.string)
 
-    return file_ui, all_traces
+    return inkml
 
 
 def get_all_file_paths(root_path):
+    """
+    Generate a list of all valid inkml file paths
+
+    :param root_path: path to root directory
+    :return: list of paths
+    """
+
     all_file_paths = []
     # full string ending in .inkml
     regex = re.compile('.*\.inkml')
