@@ -21,7 +21,7 @@ def get_training_matrix(all_inkml, local_max_coord, functions_online, functions_
     :param local_max_coord: width of square image for offline features
     :param functions_online: list of function names to call
     :param functions_offline: list of function names to call
-    :return: a list of feature vectors
+    :return: a list of feature vectors, a list of ground truth labels
     """
 
     # set global variable
@@ -29,6 +29,7 @@ def get_training_matrix(all_inkml, local_max_coord, functions_online, functions_
     max_coord = local_max_coord
 
     feature_matrix = []
+    truth_labels = []
 
     # to track progress
     total = len(all_inkml)
@@ -36,21 +37,20 @@ def get_training_matrix(all_inkml, local_max_coord, functions_online, functions_
 
     for inkml in all_inkml:
         for obj in inkml.objects:
-            feature_vector = np.array([])
+            feature_vector = []
 
             obj_coords, obj_image = get_online_offline_data(inkml, obj)
 
             for function in functions_online:
                 feature = function(obj_coords)
-                feature_vector = np.append(feature_vector, feature)
+                feature_vector += feature
 
             for function in functions_offline:
                 feature = function(obj_image)
-                feature_vector = np.append(feature_vector, feature)
+                feature_vector += feature
 
-            feature_vector = np.append(feature_vector, obj.label)
-
-            feature_matrix = np.append(feature_matrix, feature_vector)
+            truth_labels.append(obj.label)
+            feature_matrix.append(feature_vector)
 
         # to track progress
         done += 1
@@ -58,7 +58,10 @@ def get_training_matrix(all_inkml, local_max_coord, functions_online, functions_
         if track % 10 == 0:
             print('{}% done'.format(track))
 
-    return feature_matrix
+    feature_matrix = np.asarray(feature_matrix)
+    truth_labels = np.asarray(truth_labels)
+
+    return feature_matrix, truth_labels
 
 
 def get_online_offline_data(inkml, obj):
@@ -116,13 +119,13 @@ def XaxisProjection(img):
     projection=[]
     for iter in range(max_coord):
         projection.append(np.sum(img[:, iter]))
-    return np.asarray(projection)
+    return projection
 
 def YaxisProjection(img):
     projection=[]
     for iter in range(0, max_coord):
         projection.append(np.sum(img[iter]))
-    return np.asarray(projection)
+    return projection
 
 def DiagonalProjections(img):
     # create initial projection arrays initialzed to zeroes
@@ -138,7 +141,7 @@ def DiagonalProjections(img):
 
     # merge both diagonal features and return
     projectionTopLeft.extend(projectionTopRight)
-    return np.asarray(projectionTopLeft)
+    return projectionTopLeft
 
 def zoning(img, numberOfbins=10):
     size = max_coord // numberOfbins
@@ -151,12 +154,12 @@ def zoning(img, numberOfbins=10):
             part = img[prevY:iter, prevX:jiter]
             zone.append(np.sum(part)/(size*size))
         #zonning.append(row)
-    return np.asarray(zone)
+    return zone
 
 def OnlineFeature(strock):
     #print(strock)
     first=strock[0][0]
     #print(first)
     last = strock[len(strock)-1][len(strock[len(strock)-1])-1]
-    ans =(first[0]-last[0])**2+(first[1]-last[1])**2
-    return math.sqrt(ans)
+    ans = (first[0]-last[0])**2+(first[1]-last[1])**2
+    return [math.sqrt(ans)]

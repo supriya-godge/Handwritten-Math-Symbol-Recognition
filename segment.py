@@ -34,14 +34,15 @@ def main(ar):
 
     # get feature matrix
     online_features = [cfe.OnlineFeature]
-    offline_functions = [cfe.zoning, cfe.XaxisProjection, cfe.YaxisProjection, cfe.DiagonalProjections]
-    training_matrix = cfe.get_training_matrix(all_inkml,
-                                                max_coord,
-                                                online_features,
-                                                offline_functions)
+    offline_functions = [cfe.XaxisProjection]
+    #offline_functions = [cfe.zoning, cfe.XaxisProjection, cfe.YaxisProjection, cfe.DiagonalProjections]
+    training_matrix, truth_labels = cfe.get_training_matrix(all_inkml,
+                                                            max_coord,
+                                                            online_features,
+                                                            offline_functions)
 
-    rf = classifiers.random_forest_train(training_matrix[:, :-1],
-                                         training_matrix[:, -1])
+    rf = classifiers.random_forest_train(training_matrix,
+                                         truth_labels)
 
     kd = classifiers.kd_tree_train(training_matrix[:, :-1])
 
@@ -59,4 +60,4 @@ if __name__ == '__main__':
     if len(ar) == 2:
         main(ar[1])
     else:
-        print('Incorrect arguments. Usage: segment.py <path to inkml files>')
+        print('Incorrect arguments. \nUsage: segment.py <path to inkml files> \neg: segment.py TrainINKML')
