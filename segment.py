@@ -6,9 +6,13 @@ Program to read in INKML files and segment symbols
 """
 
 import sys
-import segment_read_files as sr_files
+import pattern_rec_read_files as pr_files
 import pattern_rec_utils as pr_utils
-import segment_extract_features as se_features
+import segment_feature_extractor as seg_fe
+import classify_feature_extractor as cfe
+import classifiers
+from classifier_trained_weights import TrainedWeights
+from sklearn.externals import joblib
 
 
 def main(ar):
@@ -16,19 +20,35 @@ def main(ar):
     max_coord = 100
 
     # get a list of Inkml objects
-    all_inkml = sr_files.get_all_inkml_files(ar)
+    all_inkml = pr_files.get_all_inkml_files(ar, True)
 
     # scale coordinates in all Inkml objects
     pr_utils.scale_all_inkml(all_inkml, max_coord)
 
     # segment into objects
-    se_features.rough_trial(all_inkml)
+    #seg_fe.rough_trial(all_inkml)
 
     # scale each segmented object
     pr_utils.scale_all_segments(all_inkml, max_coord)
 
+
+    # get feature matrix
+    online_features = [cfe.OnlineFeature]
+    offline_functions = [cfe.zoning, cfe.XaxisProjection, cfe.YaxisProjection, cfe.DiagonalProjections]
+    training_matrix = cfe.get_training_matrix(all_inkml,
+                                                max_coord,
+                                                online_features,
+                                                offline_functions)
+
+    rf = classifiers.random_forest_train(training_matrix[:, :-1],
+                                         training_matrix[:, -1])
+
+    kd = classifiers.kd_tree_train(training_matrix[:, :-1])
+
+    joblib.dump(TrainedWeights(rf, kd), open('model_trained.p', 'wb'), compress=True)
+
     # view symbols
-    pr_utils.print_view_symbols_html(all_inkml, max_coord)
+    #pr_utils.print_view_symbols_html(all_inkml, max_coord)
 
     #pr_utils.print_to_lg(all_inkml)
 

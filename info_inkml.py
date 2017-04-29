@@ -29,6 +29,7 @@ class Inkml:
     def create_object(self, trace_ids):
         obj = SymbolObject(trace_ids)
         self.objects.append(obj)
+        return obj
 
     def get_objects_str(self):
         result = ''

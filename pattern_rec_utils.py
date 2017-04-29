@@ -47,23 +47,23 @@ def scale_all_segments(all_inkml, max_coord):
                 symbol_strokes.append(inkml.strokes[trace_id])
 
             # get the scaled coordinates for this segmented symbol
-            symbol_strokes = get_scaled_symbol(symbol_strokes, max_coord)
+            symbol_strokes = get_scaled_symbol(symbol_strokes, max_coord, isSegment=True)
 
             # update this segmented symbol with scaled coordinates
             for index, trace_id in enumerate(obj.trace_ids):
                 inkml.strokes[trace_id] = symbol_strokes[index]
 
 
-def get_scaled_symbol(strokes, max_coord):
+def get_scaled_symbol(strokes, max_coord, isSegment=False):
     """
     Scale all coordinates to a specified range.
 
     :param strokes: list containing all stroke coordinates for a symbol. eg: ['2 35, 45 30', '10 15, 20 12, 89 54']
     :param max_coord: maximum y coordinate in the new scale
-    :return: list of zipped x and y coordinates
+    :param isSegment: if flag is set, max_coord applies to x coordinate as well
+    :return: list of (x, y) tuples
     """
 
-    symbol = []
     min_x = float('infinity')
     min_y = float('infinity')
     max_x = 0
@@ -96,17 +96,33 @@ def get_scaled_symbol(strokes, max_coord):
     pad_y = 1
     pad_x = 1
 
-    # scale y to max_coord and x to corresponding aspect ratio
-    scale_y = (max_coord - 1) / diff_y
-    new_max = max_x * max_coord / diff_y
-    new_min = min_x * max_coord / diff_y
-    scale_x = (new_max - new_min) / diff_x
+    if isSegment:
+        # scale max(x, y) to max_coord and keep aspect ratio
+        if diff_x > diff_y:
+            diff = diff_x
+        else:
+            diff = diff_y
 
-    # apply scaling computation
+        scale_y = (max_coord - 1) / diff
+        scale_x = (max_coord - 1) / diff
+
+    else:
+        # scale y to max_coord and x to corresponding aspect ratio
+        scale_y = (max_coord - 1) / diff_y
+        new_max = max_x * max_coord / diff_y
+        new_min = min_x * max_coord / diff_y
+        scale_x = (new_max - new_min) / diff_x
+
+    symbol = []
+    # apply scaling computation to each stroke
     for x, y in temp:
         x = [(scale_x * (ele - min_x)) + pad_x for ele in x]
         y = [(scale_y * (ele - min_y)) + pad_y for ele in y]
-        symbol.append(zip(x, y))
+
+        scaled_stroke = []
+        for i, j in zip(x, y):
+            scaled_stroke.append((i, j))
+        symbol.append(scaled_stroke)
 
     return symbol
 

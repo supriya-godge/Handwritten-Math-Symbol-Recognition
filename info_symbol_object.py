@@ -17,14 +17,10 @@ class SymbolObject:
         self.label = None
         self.weight = None
         self.trace_ids = trace_ids  # should be a list
-        self.truth = None  # used by training set only
 
-    def set_details(self, object_id, label, weight):
+    def set_details(self, object_id, label, weight=1.0):
         self.object_id = object_id
         self.label = label
         self.weight = str(weight)
-
-    def set_truth(self, truth):
-        self.truth = truth
 
 
