@@ -13,21 +13,26 @@ import classify_feature_extractor as cfe
 import classifiers
 from classifier_trained_weights import TrainedWeights
 from sklearn.externals import joblib
-
+import sys
+import Trained_weight
 
 def main(ar):
 
     max_coord = 100
-
     # get a list of Inkml objects
     all_inkml = pr_files.get_all_inkml_files(ar, True)
 
+
     # scale coordinates in all Inkml objects
     pr_utils.scale_all_inkml(all_inkml, max_coord)
-
     # segment into objects
     #seg_fe.rough_trial(all_inkml)
-
+    training_matrix = seg_fe.feature_extractor(all_inkml)
+    #print(training_matrix)
+    rf = classifiers.random_forest_train(training_matrix[:, :-1],
+                                         training_matrix[:, -1])
+    joblib.dump(Trained_weight.TrainWeight(rf), open("TrainWeightFile.p", "wb"), compress=True)
+    '''
     # scale each segmented object
     pr_utils.scale_all_segments(all_inkml, max_coord)
 
@@ -52,6 +57,7 @@ def main(ar):
     #pr_utils.print_view_symbols_html(all_inkml, max_coord)
 
     #pr_utils.print_to_lg(all_inkml)
+    '''
 
 
 

@@ -13,6 +13,7 @@ class Inkml:
     """
     Class to contain information about each inkml file.
     """
+    __slots__ = 'ui','strokes','objects'
 
     def __init__(self, ui):
         self.ui = ui
@@ -38,4 +39,10 @@ class Inkml:
                                               obj.weight, ', '.join(trace_id for trace_id in obj.trace_ids))
 
         return result
+
+    def __str__(self):
+        return self.strokes.__str__()
+
+    def __repr__(self):
+        return self.strokes.__repr__()
 

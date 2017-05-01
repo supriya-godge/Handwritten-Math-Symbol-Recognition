@@ -9,6 +9,7 @@ import os
 import re
 from bs4 import BeautifulSoup
 from info_inkml import Inkml
+import sys
 
 
 def get_all_inkml_files(ar, training=False):
@@ -21,10 +22,12 @@ def get_all_inkml_files(ar, training=False):
     :param training: set flag to read in ground truth values as well
     :return: list of Inkml objects
     """
+    print("In read")
 
     # get individual file path to each inkml file
-    all_file_paths = get_all_file_paths(ar)
-
+    #all_file_paths = get_all_file_paths(ar)
+    all_file_paths = read_files_path(ar)
+    print("Got all paths:",len(all_file_paths))
     # populate list with an Inkml object for each file
     all_inkml = []
     for file_path in all_file_paths:
@@ -72,9 +75,10 @@ def read_training_file(file_path):
             point = [val for val in point.split(' ') if len(val) > 0]
             x = float(point[0])
             y = float(point[1])
-            coords.append((x, y))
+            coords.append([x, y])
 
         inkml.add_stroke(trace.get('id'), coords)
+
 
     # set ground truth values
     for trace_group in soup.find_all('tracegroup'):
@@ -86,7 +90,7 @@ def read_training_file(file_path):
 
         obj_strokes = []
         for trace_view in trace_group.find_all('traceview'):
-            obj_strokes.append(trace_view.get('tracedataref'))
+            obj_strokes.append(int(trace_view.get('tracedataref')))
 
         obj = inkml.create_object(obj_strokes)
         obj.set_details(obj_id.get('href'), label.string)
@@ -126,10 +130,9 @@ def read_file(file_path):
             point = [val for val in point.split(' ') if len(val) > 0]
             x = float(point[0])
             y = float(point[1])
-            coords.append((x, y))
+            coords.append([x, y])
 
         inkml.add_stroke(trace.get('id'), coords)
-
     return inkml
 
 
@@ -179,3 +182,13 @@ def get_all_file_paths(root_path):
             all_file_paths.append(root + '/' + file)
 
     return all_file_paths
+
+
+def read_files_path(fileName):
+    all_file_paths=[]
+    with open(fileName) as fileName:
+        for line in fileName:
+            line = line.strip("\n")
+            all_file_paths.append(line)
+    return all_file_paths
+
