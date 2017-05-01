@@ -52,13 +52,14 @@ def assign_labels(all_inkml, predicted_labels):
             current_segment.append(trace_id)
 
             is_last_stroke = trace_id == next(reversed(inkml.strokes))  # boolean flag set if trace_id is last stroke
-
+            print (all_inkml.index(inkml), len(all_inkml))
             if is_last_stroke or predicted_labels[label_idx] == 0:
                 obj = inkml.create_object(current_segment)
                 obj.set_details()
                 current_segment = []
 
             label_idx += 1
+        label_idx -= 1
 
 
 
