@@ -19,24 +19,30 @@ def main(ar):
     max_coord = 100
 
     # load the trained models
+    print('Reading models into memory')
     segment_weights = joblib.load(open(ar[1], "rb"))    # read trained segmentation model
     classify_weights = joblib.load(open(ar[2], "rb"))   # read trained classification model
 
     # get a list of Inkml objects
+    print('Reading files into memory')
     all_inkml = pr_files.get_all_inkml_files(ar[0], False)
 
     # scale coordinates in all Inkml objects
+    print('Scaling expression coordinates')
     pr_utils.scale_all_inkml(all_inkml, max_coord)
 
     # segment into objects
+    print('Start feature extraction..')
     feature_matrix, truth_labels = seg_fe.feature_extractor(all_inkml)
     predicted_labels = classifiers.random_forest_test(segment_weights.RF, feature_matrix)
     assign_segmentation_labels(all_inkml, predicted_labels)
 
     # scale each segmented object
+    print('Scaling symbol coordinates')
     pr_utils.scale_all_segments(all_inkml, max_coord)
 
     # classify each segmented object
+    print('Start feature extraction..')
     online_features = [cfe.OnlineFeature]
     offline_functions = [cfe.zoning, cfe.XaxisProjection, cfe.YaxisProjection, cfe.DiagonalProjections]
     feature_matrix, truth_labels = cfe.get_training_matrix(all_inkml,

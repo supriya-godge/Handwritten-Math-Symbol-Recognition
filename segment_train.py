@@ -19,12 +19,15 @@ def main(ar):
     max_coord = 100
 
     # get a list of Inkml objects
+    print('Reading files into memory')
     all_inkml = pr_files.get_all_inkml_files(ar, True)
 
     # scale coordinates in all Inkml objects
+    print('Scaling expression coordinates')
     pr_utils.scale_all_inkml(all_inkml, max_coord)
 
     # segment into objects
+    print('Start feature extraction..')
     feature_matrix, truth_labels = seg_fe.feature_extractor(all_inkml)
     rf = classifiers.random_forest_train(feature_matrix,
                                          truth_labels)
@@ -32,9 +35,11 @@ def main(ar):
     joblib.dump(trained_weights.TrainedWeights(rf), open('segment_weights.p', 'wb'), compress=True)
 
     # scale each segmented object
+    print('Scaling symbol coordinates')
     pr_utils.scale_all_segments(all_inkml, max_coord)
 
     # get feature matrix for classifier training
+    print('Start feature extraction..')
     online_features = [cfe.OnlineFeature]
     offline_functions = [cfe.zoning, cfe.XaxisProjection, cfe.YaxisProjection, cfe.DiagonalProjections]
     feature_matrix, truth_labels = cfe.get_training_matrix(all_inkml,
