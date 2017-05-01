@@ -5,7 +5,7 @@ import numpy
 
 #class Classifiers:
 def random_forest_train(train_features, ground_labels):
-    print("rf = RandomForestClassifier(n_estimators=10, max_depth=None, min_samples_split=2, random_state=0) with biase")
+    print('Training Classifier...')
     rf = RandomForestClassifier(n_estimators=10, max_depth=None, min_samples_split=2, random_state=0)
     rf = rf.fit(train_features, ground_labels)
     return rf

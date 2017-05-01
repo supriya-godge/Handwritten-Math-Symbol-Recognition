@@ -13,7 +13,7 @@ class Inkml:
     """
     Class to contain information about each inkml file.
     """
-    __slots__ = 'ui','strokes','objects'
+    __slots__ = 'ui', 'strokes', 'objects'
 
     def __init__(self, ui):
         self.ui = ui

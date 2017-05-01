@@ -22,12 +22,11 @@ def get_all_inkml_files(ar, training=False):
     :param training: set flag to read in ground truth values as well
     :return: list of Inkml objects
     """
-    print("In read")
 
     # get individual file path to each inkml file
     #all_file_paths = get_all_file_paths(ar)
     all_file_paths = read_files_path(ar)
-    print("Got all paths:",len(all_file_paths))
+
     # populate list with an Inkml object for each file
     all_inkml = []
     for file_path in all_file_paths:
@@ -90,7 +89,7 @@ def read_training_file(file_path):
 
         obj_strokes = []
         for trace_view in trace_group.find_all('traceview'):
-            obj_strokes.append(int(trace_view.get('tracedataref')))
+            obj_strokes.append(trace_view.get('tracedataref'))
 
         obj = inkml.create_object(obj_strokes)
         obj.set_details(obj_id.get('href'), label.string)

@@ -11,7 +11,6 @@ class SymbolObject:
     """
     Class to contain information about each symbol Object
     """
-    #__slots__ = ''
 
     def __init__(self, trace_ids):
         self.object_id = None

@@ -36,32 +36,41 @@ def feature_extractor(all_inkml):
                     feature_writing_slop]
 
     feature_matrix = []
+    truth_labels = []
+
+    # to track progress
+    total = len(all_inkml)
+    done = 0
 
     for inkml in all_inkml:
+        keys = list(inkml.strokes.keys())
 
-        truth_labels = []
-        keys = list(map(int, inkml.strokes.keys()))
         for index in range(len(keys) - 1):
+            strok1 = inkml.strokes[keys[index]]
+            strok2 = inkml.strokes[keys[index + 1]]
+            AllOtherStroks = get_all_other_strocks([index, index + 1], inkml)
+            feature_vector = []
+            should_merge = False
 
-            strok1 = inkml.strokes[str(keys[index])]
-            strok2 = inkml.strokes[str(keys[index+1])] #if index+1<len(keys) else  inkml.strokes[keys[index]]
-            AllOtherStroks = get_all_other_strocks([index,index+1],inkml)
-            feature_vector=[]
-            #featureVector = np.array([])
             for func in feature_method:
                 feature = func(strok1, strok2)
                 feature_vector += feature
-                #featureVector=np.append(featureVector,feature)
+
             feature = feature_PSC(strok1,strok2,AllOtherStroks)
             feature_vector += feature
+
             for obj in inkml.objects:
                 if keys[index] in obj.trace_ids and keys[index+1] in obj.trace_ids:
-                    truth_labels.append(1)
-                else:
-                    truth_labels.append(0)
+                    should_merge = True
 
             feature_matrix.append(feature_vector)
-        #print(featureVector.tolist())
+            truth_labels.append(should_merge)
+
+        # to track progress
+        done += 1
+        track = ((done / total) * 100)
+        if track % 10 == 0:
+            print('{}% done'.format(track))
 
     feature_matrix = np.asarray(feature_matrix)
     truth_labels = np.asarray(truth_labels)
@@ -69,11 +78,11 @@ def feature_extractor(all_inkml):
     return feature_matrix, truth_labels
 
 
-def get_all_other_strocks(strock,inkml):
+def get_all_other_strocks(strokes, inkml):
     all_other=[]
-    for id in inkml.strokes.keys():
-        if not id in strock:
-            all_other+=inkml.strokes[id]
+    for key in inkml.strokes.keys():
+        if key not in strokes:
+            all_other += inkml.strokes[key]
     return all_other
 
 
