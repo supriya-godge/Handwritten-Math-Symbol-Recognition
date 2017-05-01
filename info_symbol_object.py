@@ -11,6 +11,7 @@ class SymbolObject:
     """
     Class to contain information about each symbol Object
     """
+    #__slots__ = ''
 
     def __init__(self, trace_ids):
         self.object_id = None
@@ -18,7 +19,7 @@ class SymbolObject:
         self.weight = None
         self.trace_ids = trace_ids  # should be a list
 
-    def set_details(self, object_id, label, weight=1.0):
+    def set_details(self, object_id='x', label='x', weight=1.0):
         self.object_id = object_id
         self.label = label
         self.weight = str(weight)

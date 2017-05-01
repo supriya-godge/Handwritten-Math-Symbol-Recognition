@@ -10,10 +10,11 @@ def random_forest_train(train_features, ground_labels):
     rf = rf.fit(train_features, ground_labels)
     return rf
 
-def random_forest_test(rf, test_features, test_labels):
+def random_forest_test(rf, test_features):
     score=0
     prediction = rf.predict(test_features)
 
+    '''
     for index in range(len(test_labels)):
         classPredict = prediction[index]
         #print(classPredict," ",test_labels[index])
@@ -25,6 +26,7 @@ def random_forest_test(rf, test_features, test_labels):
     print('Random Forest score correct: ', score)
     print('Random Forest incorrect: ', len(test_labels) - score)
     print('Accuracy:',(score/len(test_labels)*100))
+    '''
 
     return prediction
 

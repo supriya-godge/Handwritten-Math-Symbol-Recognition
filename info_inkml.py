@@ -41,8 +41,8 @@ class Inkml:
         return result
 
     def __str__(self):
-        return self.strokes.__str__()
+        return self.objects.__str__()
 
     def __repr__(self):
-        return self.strokes.__repr__()
+        return self.objects.__repr__()
 

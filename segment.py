@@ -64,6 +64,8 @@ def main(ar):
 if __name__ == '__main__':
     ar = sys.argv
     if len(ar) == 2:
-        main(ar[1])
+        main(ar[1]) # TrainINKML/extension
     else:
         print('Incorrect arguments. \nUsage: segment.py <path to inkml files> \neg: segment.py TrainINKML')
+        ar = input('Enter args: ')
+        main(ar)

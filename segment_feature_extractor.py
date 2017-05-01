@@ -34,36 +34,39 @@ def feature_extractor(all_inkml):
                     feature_horizntal_offset_strok1EndPoint_stroke2StartPoint,\
                     feature_vertical_distance_between_boundingcenter,\
                     feature_writing_slop]
-    feature_vector_list=[]
+
+    feature_matrix = []
 
     for inkml in all_inkml:
-        keys=list(inkml.strokes.keys())
-        keys = list(map(int, keys))
-        keys.sort()
-        print(keys)
-        for index in range(len(keys)-1):
-            label=0
+
+        truth_labels = []
+        keys = list(map(int, inkml.strokes.keys()))
+        for index in range(len(keys) - 1):
+
             strok1 = inkml.strokes[str(keys[index])]
             strok2 = inkml.strokes[str(keys[index+1])] #if index+1<len(keys) else  inkml.strokes[keys[index]]
             AllOtherStroks = get_all_other_strocks([index,index+1],inkml)
             feature_vector=[]
-            featureVector = np.array([])
+            #featureVector = np.array([])
             for func in feature_method:
-                feature=func(strok1, strok2)
-                #feature_vector+=a
-                featureVector=np.append(featureVector,feature)
-            feature=feature_PSC(strok1,strok2,AllOtherStroks)
-            featureVector = np.append(featureVector, feature)
+                feature = func(strok1, strok2)
+                feature_vector += feature
+                #featureVector=np.append(featureVector,feature)
+            feature = feature_PSC(strok1,strok2,AllOtherStroks)
+            feature_vector += feature
             for obj in inkml.objects:
                 if keys[index] in obj.trace_ids and keys[index+1] in obj.trace_ids:
-                    print(keys[index], " ", keys[index + 1], "label1", obj.trace_ids)
-                    label=1
-            featureVector = np.append(featureVector, label)
-            feature_vector_list.append(featureVector.tolist())
+                    truth_labels.append(1)
+                else:
+                    truth_labels.append(0)
+
+            feature_matrix.append(feature_vector)
         #print(featureVector.tolist())
 
-    #print(feature_vector_list)
-    return np.asarray(feature_vector_list)
+    feature_matrix = np.asarray(feature_matrix)
+    truth_labels = np.asarray(truth_labels)
+
+    return feature_matrix, truth_labels
 
 
 def get_all_other_strocks(strock,inkml):
@@ -152,13 +155,13 @@ def feature_parallelity_of_stroks(strok1,strok2):
     v2 = np.array([strok2[0], strok2[len(strok2)-1]])
     co = np.dot(v1,v2)
     sin = np.linalg.norm(np.cross(v1,v2))
-    return np.arctan2(co,sin).flatten()
+    return list(np.arctan2(co,sin).flatten())
 
 
 def feature_distance_between_bounding_center(strok1,strok2):
     s1_center= np.asarray(bounding_box_center(strok1))
     s2_center = np.asarray(bounding_box_center(strok2))
-    return s1_center-s2_center
+    return list(s1_center-s2_center)
 
 def feature_distance_average_center(strok1,strok2):
     s1 = np.asarray(strok1)
@@ -175,17 +178,17 @@ def bounding_box_center(strok1):
 def feature_maximal_point_pair_distance(strok1,strok2):
     s1=get_Min_Max(strok1)
     s2=get_Min_Max(strok2)
-    return s1[0]-s2[1]
+    return [s1[0]-s2[1]]
 
 def feature_horizntal_offset_strok1EndPoint_stroke2StartPoint(strok1,strok2):
     l = len(strok1)-1
-    return strok1[l][0]-strok2[0][0]
+    return [strok1[l][0] - strok2[0][0]]
 
 
 def feature_vertical_distance_between_boundingcenter(strok1,strok2):
     s1_center=bounding_box_center(strok1)
     s2_center=bounding_box_center(strok2)
-    return s1_center[1]-s2_center[1]
+    return [s1_center[1]-s2_center[1]]
 
 def feature_writing_slop(strok1,strok2):
     s1=strok1[len(strok1)-1]
@@ -198,10 +201,10 @@ def feature_PSC(strok1,strok2,all_other_strok):
     center = bounding_box_center(strok1+strok2)
     radius = boundingBox[0] if boundingBox[0]>boundingBox[1] else boundingBox[1]
     bounding_circle = (center,radius)
-    feature_vector.append(calculate_strok(bounding_circle,strok1))
-    feature_vector.append(calculate_strok(bounding_circle,strok2))
-    feature_vector.append(calculate_strok(bounding_circle,all_other_strok))
-    return list(feature_vector)
+    feature_vector += calculate_strok(bounding_circle,strok1)
+    feature_vector += calculate_strok(bounding_circle,strok2)
+    feature_vector += calculate_strok(bounding_circle,all_other_strok)
+    return feature_vector
 
 
 
@@ -223,7 +226,7 @@ def calculate_strok(bounding_circle,strok1):
             if a==6:
                 a=5
             bins[a][d-1]+=1
-    return bins.flatten()
+    return list(bins.flatten())
 
 
 
