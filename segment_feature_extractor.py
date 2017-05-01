@@ -38,11 +38,13 @@ def feature_extractor(all_inkml):
 
     for inkml in all_inkml:
         keys=list(inkml.strokes.keys())
+        keys = list(map(int, keys))
         keys.sort()
+        print(keys)
         for index in range(len(keys)-1):
             label=0
-            strok1 = inkml.strokes[keys[index]]
-            strok2 = inkml.strokes[keys[index+1]] #if index+1<len(keys) else  inkml.strokes[keys[index]]
+            strok1 = inkml.strokes[str(keys[index])]
+            strok2 = inkml.strokes[str(keys[index+1])] #if index+1<len(keys) else  inkml.strokes[keys[index]]
             AllOtherStroks = get_all_other_strocks([index,index+1],inkml)
             feature_vector=[]
             featureVector = np.array([])
@@ -53,9 +55,8 @@ def feature_extractor(all_inkml):
             feature=feature_PSC(strok1,strok2,AllOtherStroks)
             featureVector = np.append(featureVector, feature)
             for obj in inkml.objects:
-                #print(index, " ", index+1, "label1",obj.trace_ids)
-                if index in obj.trace_ids and index+1 in obj.trace_ids:
-                    #print("label1")
+                if keys[index] in obj.trace_ids and keys[index+1] in obj.trace_ids:
+                    print(keys[index], " ", keys[index + 1], "label1", obj.trace_ids)
                     label=1
             featureVector = np.append(featureVector, label)
             feature_vector_list.append(featureVector.tolist())
@@ -217,7 +218,7 @@ def calculate_strok(bounding_circle,strok1):
         angle=round(angle*ang_round)//ang_round
         dist = round(distance(center,s1)*rad_round)/rad_round
         if dist < radius:
-            d=round(dist/rad_round)
+            d=int(round(dist/rad_round))
             a=angle//ang_round
             if a==6:
                 a=5
