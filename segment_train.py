@@ -40,7 +40,7 @@ def main(ar):
 
     # get feature matrix for classifier training
     print('Start feature extraction..')
-    online_features = [cfe.OnlineFeature]
+    online_features = [cfe.OnlineFeature,cfe.polarFeature,cfe.endPointToCenter]
     offline_functions = [cfe.zoning, cfe.XaxisProjection, cfe.YaxisProjection, cfe.DiagonalProjections]
     feature_matrix, truth_labels = cfe.get_training_matrix(all_inkml,
                                                             max_coord,

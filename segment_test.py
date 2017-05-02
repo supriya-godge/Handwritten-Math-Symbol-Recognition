@@ -43,7 +43,7 @@ def main(ar):
 
     # classify each segmented object
     print('Start feature extraction..')
-    online_features = [cfe.OnlineFeature]
+    online_features = [cfe.OnlineFeature,cfe.polarFeature,cfe.endPointToCenter]
     offline_functions = [cfe.zoning, cfe.XaxisProjection, cfe.YaxisProjection, cfe.DiagonalProjections]
     feature_matrix, truth_labels = cfe.get_training_matrix(all_inkml,
                                                             max_coord,
@@ -52,7 +52,7 @@ def main(ar):
     predicted_labels = classifiers.random_forest_test(classify_weights.RF, feature_matrix)
     assign_classification_labels(all_inkml, predicted_labels)
 
-    print_to_file(all_inkml, 'test_out')
+    print_to_file(all_inkml, 'E:/PaternRec/Project2/test_out')
 
 
 def assign_segmentation_labels(all_inkml, predicted_labels):

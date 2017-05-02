@@ -24,8 +24,8 @@ def get_all_inkml_files(ar, training=False):
     """
 
     # get individual file path to each inkml file
-    #all_file_paths = get_all_file_paths(ar)
-    all_file_paths = read_files_path(ar)
+    all_file_paths = get_all_file_paths(ar)
+    #all_file_paths = read_files_path(ar)
 
     # populate list with an Inkml object for each file
     all_inkml = []

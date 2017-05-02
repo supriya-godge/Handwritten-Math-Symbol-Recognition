@@ -9,7 +9,7 @@ import collections
 import numpy as np
 import cv2
 import math
-
+import segment_feature_extractor as sfe
 global max_coord
 
 def get_training_matrix(all_inkml, local_max_coord, functions_online, functions_offline):
@@ -80,8 +80,8 @@ def get_online_offline_data(inkml, obj):
 
     # get the coordinates and add to list. Also draw on cv2 image
     for trace_id in obj.trace_ids:
+        obj_coords.append(inkml.strokes[trace_id][0])
         coords = np.asarray(inkml.strokes[trace_id], np.int32)
-        obj_coords.append(coords)
         coords = coords.reshape((-1, 1, 2))
         cv2.polylines(obj_image, [coords], False, 255)
 
@@ -149,17 +149,30 @@ def zoning(img, numberOfbins=10):
     zone=[]
     for iter in range(size, max_coord, size):
         prevX = 0
-        #row=[]
         for jiter in range(size, max_coord, size):
             part = img[prevY:iter, prevX:jiter]
             zone.append(np.sum(part)/(size*size))
-        #zonning.append(row)
     return zone
 
 def OnlineFeature(strock):
-    #print(strock)
     first=strock[0][0]
-    #print(first)
     last = strock[len(strock)-1][len(strock[len(strock)-1])-1]
-    ans = (first[0]-last[0])**2+(first[1]-last[1])**2
-    return [math.sqrt(ans)]
+    return [sfe.distance(first,last)]
+
+
+def endPointToCenter(strock):
+    center=len(strock)//2
+    p1=sfe.distance(strock[0],center)
+    p2=sfe.distance(center,strock[len(strock)-1])
+    return [p1,p2]
+
+
+def polarFeature(strock):
+    boundingBox = sfe.bounding_box(strock)
+    center = sfe.bounding_box_center(strock)
+    radius = boundingBox[0] if boundingBox[0] > boundingBox[1] else boundingBox[1]
+    bounding_circle = (center, radius)
+    feature_vector = sfe.calculate_strok(bounding_circle, strock)
+    return feature_vector
+
+
