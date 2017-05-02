@@ -30,74 +30,13 @@ def get_all_inkml_files(ar, training=False):
     # populate list with an Inkml object for each file
     all_inkml = []
     for file_path in all_file_paths:
-        if training:
-            inkml = read_training_file(file_path)
-        else:
-            inkml = read_file(file_path)
+        inkml = read_file(file_path, training)
         if inkml is not None:
             all_inkml.append(inkml)
 
     return all_inkml
 
-
-def read_training_file(file_path):
-    """
-    Open and read an inkml file along with ground truth values.
-    Create an Inkml object with the parsed information.
-
-    :param file_path: file path to inkml file
-    :return: Inkml object
-    """
-
-    # TODO: merge with read_file()
-
-    # open and read file
-    soup = BeautifulSoup(open(file_path), 'lxml')
-
-    # parse file for UI. Return None if not found
-    file_ui = soup.find('annotation', {'type': 'UI'})
-    if file_ui is not None:
-        file_ui = file_ui.string.strip('"')
-    else:
-        print('Skipping file: ', file_path)
-        return None
-
-    # create Inkml object
-    inkml = Inkml(file_ui)
-
-    # add stroke information to Inkml object
-    for trace in soup.find_all('trace'):
-        stroke = trace.string.strip('\n').split(',')
-        coords = []
-
-        for point in stroke:
-            point = [val for val in point.split(' ') if len(val) > 0]
-            x = float(point[0])
-            y = float(point[1])
-            coords.append([x, y])
-
-        inkml.add_stroke(trace.get('id'), coords)
-
-
-    # set ground truth values
-    for trace_group in soup.find_all('tracegroup'):
-
-        label = trace_group.find('annotation', {'type': 'truth'})
-        obj_id = trace_group.find('annotationxml', recursive=False)
-        if obj_id is None:
-            continue
-
-        obj_strokes = []
-        for trace_view in trace_group.find_all('traceview'):
-            obj_strokes.append(trace_view.get('tracedataref'))
-
-        obj = inkml.create_object(obj_strokes)
-        obj.set_details(obj_id.get('href'), label.string)
-
-    return inkml
-
-
-def read_file(file_path):
+def read_file(file_path, training=False):
     """
     Open and read an inkml file. Create an Inkml object with the
     parsed information.
@@ -117,6 +56,12 @@ def read_file(file_path):
         print('Skipping file: ', file_path)
         return None
 
+    # UI does not match file name so get from file path
+    file_ui = file_path.split('/')[-1]
+    if '.inkml' not in file_ui:
+        file_ui = file_path.split('\\')[-1]
+    file_ui = file_ui.strip('.inkml')
+
     # create Inkml object
     inkml = Inkml(file_ui)
 
@@ -132,6 +77,23 @@ def read_file(file_path):
             coords.append([x, y])
 
         inkml.add_stroke(trace.get('id'), coords)
+
+
+    if training:
+        # set ground truth values
+        for trace_group in soup.find_all('tracegroup'):
+            label = trace_group.find('annotation', {'type': 'truth'})
+            obj_id = trace_group.find('annotationxml', recursive=False)
+            if obj_id is None:
+                continue
+
+            obj_strokes = []
+            for trace_view in trace_group.find_all('traceview'):
+                obj_strokes.append(trace_view.get('tracedataref'))
+
+            obj = inkml.create_object(obj_strokes)
+            obj.set_details(obj_id.get('href'), label.string)
+
     return inkml
 
 
@@ -156,10 +118,6 @@ def read_file_Traning(file_path):
     else:
         print('Skipping file: ', file_path)
     return symb[2:]
-
-
-
-
 
 
 def get_all_file_paths(root_path):
