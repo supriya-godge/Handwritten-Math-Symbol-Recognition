@@ -52,7 +52,7 @@ def main(ar):
     predicted_labels = classifiers.random_forest_test(classify_weights.RF, feature_matrix)
     assign_classification_labels(all_inkml, predicted_labels)
 
-    print_to_file(all_inkml, 'E:/PaternRec/Project2/test_out')
+    print_to_file(all_inkml, 'test_out')
 
 
 def assign_segmentation_labels(all_inkml, predicted_labels):

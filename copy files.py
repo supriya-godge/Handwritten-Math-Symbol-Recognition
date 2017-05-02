@@ -16,6 +16,6 @@ fileName="TraningFile.txt"
 with open(fileName) as fD:
     for line in fD:
         line = line.strip()
-        shutil.copy2(line, "E:/PaternRec/Project2/TrainFile")
+        shutil.copy2(line, "testing_inkml")
 
 

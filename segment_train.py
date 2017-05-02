@@ -60,7 +60,6 @@ def main(ar):
     #pr_utils.print_to_lg(all_inkml)
 
 
-
 if __name__ == '__main__':
     ar = sys.argv
     if len(ar) == 2:

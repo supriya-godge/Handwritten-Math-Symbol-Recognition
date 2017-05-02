@@ -58,9 +58,12 @@ def read_file(file_path, training=False):
 
     # UI does not match file name so get from file path
     file_ui = file_path.split('/')[-1]
-    if '.inkml' not in file_ui:
-        file_ui = file_path.split('\\')[-1]
-    file_ui = file_ui.strip('.inkml')
+    file_ui = file_ui.split('\\')[-1]
+    if file_ui.endswith('.inkml'):
+        file_ui = file_ui[:-6]
+    else:
+        print('Skipping file: ', file_path)
+        return None
 
     # create Inkml object
     inkml = Inkml(file_ui)
