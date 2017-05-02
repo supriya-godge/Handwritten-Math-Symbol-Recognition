@@ -15,13 +15,21 @@ from sklearn.externals import joblib
 import sys
 import trained_weights
 
-def main(ar):
+def main(ar,flag):
     max_coord = 100
 
     # get a list of Inkml objects
     print('Reading files into memory')
     all_inkml = pr_files.get_all_inkml_files(ar, True)
+    if flag==1:
+        segment_train(all_inkml,max_coord)
+    if flag==2:
+        classifyTrain(all_inkml,max_coord)
+    if flag==3:
+        segment_train(all_inkml, max_coord)
+        classifyTrain(all_inkml, max_coord)
 
+def segment_train(all_inkml, max_coord):
     # scale coordinates in all Inkml objects
     print('Scaling expression coordinates')
     pr_utils.scale_all_inkml(all_inkml, max_coord)
@@ -34,6 +42,7 @@ def main(ar):
 
     joblib.dump(trained_weights.TrainedWeights(rf), open('segment_weights.p', 'wb'), compress=True)
 
+def classifyTrain(all_inkml, max_coord):
     # scale each segmented object
     print('Scaling symbol coordinates')
     pr_utils.scale_all_segments(all_inkml, max_coord)
@@ -63,9 +72,9 @@ def main(ar):
 
 if __name__ == '__main__':
     ar = sys.argv
-    if len(ar) == 2:
-        main(ar[1]) # TrainINKML/extension
+    if len(ar) == 3:
+        main(ar[1],int(ar[2])) # TrainINKML/extension
     else:
         print('Incorrect arguments. \nUsage: segment.py <path to inkml files>')
         ar = input('Enter args: ')
-        main(ar)
+        main(ar,3)
