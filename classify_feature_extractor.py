@@ -55,7 +55,7 @@ def get_training_matrix(all_inkml, local_max_coord, functions_online, functions_
         # to track progress
         done += 1
         track = ((done/total)*100)
-        if track % 10 == 0:
+        if track % 2 == 0:
             print('{}% done'.format(track))
 
     feature_matrix = np.asarray(feature_matrix)

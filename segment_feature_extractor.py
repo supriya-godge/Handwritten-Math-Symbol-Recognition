@@ -69,7 +69,7 @@ def feature_extractor(all_inkml):
         # to track progress
         done += 1
         track = ((done / total) * 100)
-        if track % 10 == 0:
+        if track % 2 == 0:
             print('{}% done'.format(track))
 
     feature_matrix = np.asarray(feature_matrix)
