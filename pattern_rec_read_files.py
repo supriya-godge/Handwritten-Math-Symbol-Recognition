@@ -57,7 +57,7 @@ def read_training_file(file_path):
     # parse file for UI. Return None if not found
     file_ui = soup.find('annotation', {'type': 'UI'})
     if file_ui is not None:
-        file_ui = file_ui.string
+        file_ui = file_ui.string.strip('"')
     else:
         print('Skipping file: ', file_path)
         return None
@@ -112,7 +112,7 @@ def read_file(file_path):
     # parse file for UI. Return None if not found
     file_ui = soup.find('annotation', {'type': 'UI'})
     if file_ui is not None:
-        file_ui = file_ui.string
+        file_ui = file_ui.string.strip('"')
     else:
         print('Skipping file: ', file_path)
         return None

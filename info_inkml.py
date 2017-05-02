@@ -35,7 +35,7 @@ class Inkml:
     def get_objects_str(self):
         result = ''
         for obj in self.objects:
-            result += 'O , {}, {}, {}, {}\n'.format(obj.object_id, obj.label,
+            result += 'O, {}, {}, {}, {}\n'.format(obj.object_id, obj.label,
                                               obj.weight, ', '.join(trace_id for trace_id in obj.trace_ids))
 
         return result

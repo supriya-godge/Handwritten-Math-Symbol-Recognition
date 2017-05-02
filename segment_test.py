@@ -75,16 +75,17 @@ def assign_segmentation_labels(all_inkml, predicted_labels):
 
 def assign_classification_labels(all_inkml, predicted_labels):
     label_idx = 0
+
     for inkml in all_inkml:
-        label_symbol = predicted_labels[label_idx]
-
         symbol_count = {}
-        if label_symbol in symbol_count:
-            symbol_count[label_symbol] += 1
-        else:
-            symbol_count[label_symbol] = 1
-
         for obj in inkml.objects:
+            label_symbol = predicted_labels[label_idx]
+
+            if label_symbol in symbol_count:
+                symbol_count[label_symbol] += 1
+            else:
+                symbol_count[label_symbol] = 1
+
             object_id = label_symbol + '_' + str(symbol_count[label_symbol])
             obj.set_details(object_id, label_symbol)
 
