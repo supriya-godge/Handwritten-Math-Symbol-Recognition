@@ -22,7 +22,7 @@ def feature_extractor(all_inkml):
     :param all_inkml:
     :return:
     """
-    feature_method=[feature_min_distance_betw_strockes,\
+    feature_method_normalize=[feature_min_distance_betw_strockes,\
                     feature_horizontal_overlapping_of_surrounding_rectangles,\
                     feature_distance_horizontal_offset_startandEnd_position,\
                     feature_distance_vertical_offset_startandEnd_position,\
@@ -34,6 +34,9 @@ def feature_extractor(all_inkml):
                     feature_horizntal_offset_strok1EndPoint_stroke2StartPoint,\
                     feature_vertical_distance_between_boundingcenter,\
                     feature_writing_slop]
+
+    feature_method=[feature_writing_slop,\
+                    feature_parallelity_of_stroks]
 
     feature_matrix = []
     truth_labels = []
@@ -53,13 +56,18 @@ def feature_extractor(all_inkml):
             feature_vector = []
             should_merge = False
 
-            for func in feature_method:
+            for func in feature_method_normalize:
                 feature = func(strok1, strok2)
                 feature_vector += feature
 
             bb = bounding_box(strok1+strok2)
             width = bb[1]-bb[0] if bb[1]-bb[0]!=0 else 1
             feature_vector[:] = [x / width for x in feature_vector]
+
+            for func in feature_method:
+                feature = func(strok1, strok2)
+                feature_vector += feature
+
             feature = feature_PSC(strok1,strok2,AllOtherStroks)
             feature_vector += feature
 
