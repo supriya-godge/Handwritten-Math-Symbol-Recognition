@@ -22,7 +22,7 @@ def feature_extractor(all_inkml):
     :param all_inkml:
     :return:
     """
-    feature_method=[feature_min_distance_betw_strockes,\
+    feature_method_normalize=[feature_min_distance_betw_strockes,\
                     feature_horizontal_overlapping_of_surrounding_rectangles,\
                     feature_distance_horizontal_offset_startandEnd_position,\
                     feature_distance_vertical_offset_startandEnd_position,\
@@ -34,6 +34,9 @@ def feature_extractor(all_inkml):
                     feature_horizntal_offset_strok1EndPoint_stroke2StartPoint,\
                     feature_vertical_distance_between_boundingcenter,\
                     feature_writing_slop]
+
+    feature_method=[feature_writing_slop,\
+                    feature_parallelity_of_stroks]
 
     feature_matrix = []
     truth_labels = []
@@ -52,6 +55,14 @@ def feature_extractor(all_inkml):
             AllOtherStroks = get_all_other_strocks([index, index + 1], inkml)
             feature_vector = []
             should_merge = False
+
+            for func in feature_method_normalize:
+                feature = func(strok1, strok2)
+                feature_vector += feature
+
+            bb = bounding_box(strok1+strok2)
+            width = bb[1]-bb[0] if bb[1]-bb[0]!=0 else 1
+            feature_vector[:] = [x / width for x in feature_vector]
 
             for func in feature_method:
                 feature = func(strok1, strok2)
@@ -213,9 +224,9 @@ def feature_PSC(strok1,strok2,all_other_strok):
     center = bounding_box_center(strok1+strok2)
     radius = boundingBox[0] if boundingBox[0]>boundingBox[1] else boundingBox[1]
     bounding_circle = (center,radius)
-    feature_vector += calculate_strok(bounding_circle,strok1)
-    feature_vector += calculate_strok(bounding_circle,strok2)
-    feature_vector += calculate_strok(bounding_circle,all_other_strok)
+    feature_vector += calculate_strok(bounding_circle,strok1)[1]
+    feature_vector += calculate_strok(bounding_circle,strok2)[1]
+    feature_vector += calculate_strok(bounding_circle,all_other_strok)[1]
     return feature_vector
 
 
@@ -224,6 +235,7 @@ def calculate_strok(bounding_circle,strok1):
     radius = bounding_circle[1]
     ang_round=60
     rad_round=radius/5
+    count=1
     center = bounding_circle[0]
     for s1 in strok1:
         angle=math.atan2(center[1] - s1[1], center[0] - s1[0])
@@ -231,12 +243,13 @@ def calculate_strok(bounding_circle,strok1):
         angle=round(angle*ang_round)//ang_round
         dist = round(distance(center,s1)*rad_round)/rad_round
         if dist < radius:
+            count+=1
             d=int(round(dist/rad_round))
             a=angle//ang_round
             if a==6:
                 a=5
             bins[a][d-1]+=1
-    return list(bins.flatten())
+    return list(bins.flatten()), list(bins.flatten()/count)
 
 
 

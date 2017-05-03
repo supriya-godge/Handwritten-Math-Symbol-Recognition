@@ -174,7 +174,7 @@ def polarFeature(strock):
     center = sfe.bounding_box_center(strock)
     radius = boundingBox[0] if boundingBox[0] > boundingBox[1] else boundingBox[1]
     bounding_circle = (center, radius)
-    feature_vector = sfe.calculate_strok(bounding_circle, strock)
+    feature_vector = sfe.calculate_strok(bounding_circle, strock)[0]
     return feature_vector
 
 
