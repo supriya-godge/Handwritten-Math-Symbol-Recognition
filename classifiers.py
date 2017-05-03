@@ -1,6 +1,7 @@
 import sklearn
 from sklearn.model_selection import cross_val_score
 from sklearn.ensemble import RandomForestClassifier
+
 import numpy
 
 #class Classifiers:
@@ -9,6 +10,9 @@ def random_forest_train(train_features, ground_labels):
     rf = RandomForestClassifier(n_estimators=50, max_depth=50, min_samples_split=2, random_state=0)
     rf = rf.fit(train_features, ground_labels)
     return rf
+
+
+
 
 def random_forest_test(rf, test_features):
     score=0

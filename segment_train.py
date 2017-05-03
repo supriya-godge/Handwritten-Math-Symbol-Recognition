@@ -14,6 +14,7 @@ import classifiers
 from sklearn.externals import joblib
 import sys
 import trained_weights
+import numpy as np
 
 def main(ar,flag):
     max_coord = 100
@@ -37,6 +38,8 @@ def segment_train(all_inkml, max_coord):
     # segment into objects
     print('Start feature extraction..')
     feature_matrix, truth_labels = seg_fe.feature_extractor(all_inkml)
+    with open("segment_traning_weight.csv", 'wb') as abc:
+        np.savetxt(abc , feature_matrix , delimiter=",")
     rf = classifiers.random_forest_train(feature_matrix,
                                          truth_labels)
 
@@ -56,6 +59,8 @@ def classifyTrain(all_inkml, max_coord):
                                                             online_features,
                                                             offline_functions)
 
+    with open("classify_traning_weight.csv", 'wb') as abc:
+        np.savetxt(abc, feature_matrix, delimiter=",")
     rf = classifiers.random_forest_train(feature_matrix,
                                          truth_labels)
 

@@ -57,6 +57,9 @@ def feature_extractor(all_inkml):
                 feature = func(strok1, strok2)
                 feature_vector += feature
 
+            bb = bounding_box(strok1+strok2)
+            width = bb[1]-bb[0] if bb[1]-bb[0]!=0 else 1
+            feature_vector[:] = [x / width for x in feature_vector]
             feature = feature_PSC(strok1,strok2,AllOtherStroks)
             feature_vector += feature
 
@@ -212,9 +215,9 @@ def feature_PSC(strok1,strok2,all_other_strok):
     center = bounding_box_center(strok1+strok2)
     radius = boundingBox[0] if boundingBox[0]>boundingBox[1] else boundingBox[1]
     bounding_circle = (center,radius)
-    feature_vector += calculate_strok(bounding_circle,strok1)
-    feature_vector += calculate_strok(bounding_circle,strok2)
-    feature_vector += calculate_strok(bounding_circle,all_other_strok)
+    feature_vector += calculate_strok(bounding_circle,strok1)[1]
+    feature_vector += calculate_strok(bounding_circle,strok2)[1]
+    feature_vector += calculate_strok(bounding_circle,all_other_strok)[1]
     return feature_vector
 
 
@@ -225,6 +228,7 @@ def calculate_strok(bounding_circle,strok1):
     radius = bounding_circle[1]
     ang_round=60
     rad_round=radius/5
+    count=1
     center = bounding_circle[0]
     for s1 in strok1:
         angle=math.atan2(center[1] - s1[1], center[0] - s1[0])
@@ -232,12 +236,13 @@ def calculate_strok(bounding_circle,strok1):
         angle=round(angle*ang_round)//ang_round
         dist = round(distance(center,s1)*rad_round)/rad_round
         if dist < radius:
+            count+=1
             d=int(round(dist/rad_round))
             a=angle//ang_round
             if a==6:
                 a=5
             bins[a][d-1]+=1
-    return list(bins.flatten())
+    return list(bins.flatten()), list(bins.flatten()/count)
 
 
 
