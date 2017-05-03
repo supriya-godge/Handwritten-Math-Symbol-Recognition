@@ -88,8 +88,6 @@ def get_all_other_strocks(strokes, inkml):
     return all_other
 
 
-
-
 def bounding_box(strok):
     '''
     :param strok:
@@ -97,6 +95,7 @@ def bounding_box(strok):
     '''
     minX,maxX,minY,maxY=get_Min_Max(strok)
     return [minX,maxX,minY,maxY]
+
 
 def get_Min_Max(stroke1):
     if not isinstance(stroke1[0],list):
@@ -119,6 +118,7 @@ def feature_min_distance_betw_strockes(strok1,strok2):
     else:
         return [s2[0]-s1[1]]
 
+
 def feature_horizontal_overlapping_of_surrounding_rectangles(strok1,strok2):
     s1=get_Min_Max(strok1)
     s2=get_Min_Max(strok2)
@@ -126,6 +126,7 @@ def feature_horizontal_overlapping_of_surrounding_rectangles(strok1,strok2):
         return [s2[0] - s1[1]]
     else:
         return [0]
+
 
 def feature_distance_horizontal_offset_startandEnd_position(strok1,strok2):
     l = len(strok1)-1
@@ -218,9 +219,7 @@ def feature_PSC(strok1,strok2,all_other_strok):
     return feature_vector
 
 
-
 def calculate_strok(bounding_circle,strok1):
-
     bins = np.zeros((6,5))
     radius = bounding_circle[1]
     ang_round=60
