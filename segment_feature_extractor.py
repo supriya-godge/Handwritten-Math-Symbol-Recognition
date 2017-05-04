@@ -47,36 +47,47 @@ def feature_extractor(all_inkml):
     done = 0
 
     for inkml in all_inkml:
-        keys = list(inkml.strokes.keys())
 
-        for index in range(len(keys) - 1):
-            strok1 = inkml.strokes[keys[index]]
-            strok2 = inkml.strokes[keys[index + 1]]
-            AllOtherStroks = get_all_other_strocks([index, index + 1], inkml)
-            feature_vector = []
-            should_merge = False
+        adjacent_strokes = []   # stores two adjacent strokes
+        for obj in object:
+            for idx, stroke in enumerate(obj.trace_ids):
+                adjacent_strokes.append(stroke)
 
-            for func in feature_method_normalize:
-                feature = func(strok1, strok2)
+                if len(adjacent_strokes) == 3:  # make sure there are only two strokes in the list
+                    del adjacent_strokes[0]
+                if len(adjacent_strokes) == 1:  # this should be True only for the 1st stroke in the 1st object
+                    continue
+
+                stroke1 = adjacent_strokes[0]
+                stroke2 = adjacent_strokes[1]
+
+                all_other_strokes = get_all_other_strokes(adjacent_strokes, inkml)
+
+                feature_vector = []
+
+                for func in feature_method_normalize:
+                    feature = func(stroke1, stroke2)
+                    feature_vector += feature
+
+                bb = bounding_box(stroke1 + stroke2)
+                width = bb[1] - bb[0] if bb[1] - bb[0] != 0 else 1
+                feature_vector[:] = [x / width for x in feature_vector]
+
+                for func in feature_method:
+                    feature = func(stroke1, stroke2)
+                    feature_vector += feature
+
+                feature = feature_PSC(stroke1, stroke2, all_other_strokes)
                 feature_vector += feature
 
-            bb = bounding_box(strok1+strok2)
-            width = bb[1]-bb[0] if bb[1]-bb[0]!=0 else 1
-            feature_vector[:] = [x / width for x in feature_vector]
+                if idx > 0:
+                    should_merge = True     # set if the two adjacent strokes are in the same object
+                else:
+                    should_merge = False
 
-            for func in feature_method:
-                feature = func(strok1, strok2)
-                feature_vector += feature
+                feature_matrix.append(feature_vector)
+                truth_labels.append(should_merge)
 
-            feature = feature_PSC(strok1,strok2,AllOtherStroks)
-            feature_vector += feature
-
-            for obj in inkml.objects:
-                if keys[index] in obj.trace_ids and keys[index+1] in obj.trace_ids:
-                    should_merge = True
-
-            feature_matrix.append(feature_vector)
-            truth_labels.append(should_merge)
 
         # to track progress
         done += 1
@@ -91,7 +102,7 @@ def feature_extractor(all_inkml):
     return feature_matrix, truth_labels
 
 
-def get_all_other_strocks(strokes, inkml):
+def get_all_other_strokes(strokes, inkml):
     all_other=[]
     for key in inkml.strokes.keys():
         if key not in strokes:

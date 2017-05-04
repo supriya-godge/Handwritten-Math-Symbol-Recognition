@@ -17,7 +17,7 @@ import trained_weights
 import numpy as np
 
 def main(ar,flag):
-    max_coord = 200
+    max_coord = 50
 
     # get a list of Inkml objects
     print('Reading files into memory')
@@ -38,8 +38,8 @@ def segment_train(all_inkml, max_coord):
     # segment into objects
     print('Start feature extraction for segmentation..')
     feature_matrix, truth_labels = seg_fe.feature_extractor(all_inkml)
-    with open("segment_traning_weight.csv", 'wb') as abc:
-        np.savetxt(abc , feature_matrix , delimiter=",")
+    #with open("segment_traning_weight.csv", 'wb') as abc:
+    #    np.savetxt(abc , feature_matrix , delimiter=",")
     rf = classifiers.random_forest_train(feature_matrix,
                                          truth_labels)
 
@@ -82,6 +82,6 @@ if __name__ == '__main__':
     if len(ar) == 3:
         main(ar[1],int(ar[2])) # TrainINKML/extension
     else:
-        print('Incorrect arguments. \nUsage: segment.py <path to inkml files>')
+        print('Incorrect arguments. \nUsage: segment.py <path to inkml files> <1: segment, 2:classify>')
         ar = input('Enter args: ').split()
         main(ar[0], int(ar[1]))
