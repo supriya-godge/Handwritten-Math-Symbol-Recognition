@@ -15,6 +15,25 @@ def rough_trial(all_inkml):
             inkml.create_object([trace_id])
 
 
+def calculate_bounding_center_all_stroks(inkml):
+    center=[]
+    keys = list(inkml.strokes.keys())
+    for key in keys:
+        strok=inkml.strokes[key]
+        center.append(bounding_box_center(strok))
+    return center
+
+
+def get_closest_center(centers, index):
+    value=[]
+    for center in centers[index+1:]:
+        value.append(distance(centers[index],center))
+    value=np.asarray(value)
+    clostest_strok_index=value.argsort()[:3]
+    clostest_strok_index=set(clostest_strok_index)
+    return clostest_strok_index
+
+
 def feature_extractor(all_inkml):
     """
     Temporary.
@@ -27,13 +46,11 @@ def feature_extractor(all_inkml):
                     feature_distance_horizontal_offset_startandEnd_position,\
                     feature_distance_vertical_offset_startandEnd_position,\
                     feature_backward_moment,\
-                    feature_parallelity_of_stroks,\
                     feature_distance_between_bounding_center,\
                     feature_distance_average_center,\
                     feature_maximal_point_pair_distance,\
                     feature_horizntal_offset_strok1EndPoint_stroke2StartPoint,\
-                    feature_vertical_distance_between_boundingcenter,\
-                    feature_writing_slop]
+                    feature_vertical_distance_between_boundingcenter]
 
     feature_method=[feature_writing_slop,\
                     feature_parallelity_of_stroks]
@@ -48,35 +65,38 @@ def feature_extractor(all_inkml):
 
     for inkml in all_inkml:
         keys = list(inkml.strokes.keys())
-
+        centers=calculate_bounding_center_all_stroks(inkml)
         for index in range(len(keys) - 1):
+            clostest_strok_index=get_closest_center(centers,index)
+            clostest_strok_index.add(index+1)
             strok1 = inkml.strokes[keys[index]]
-            strok2 = inkml.strokes[keys[index + 1]]
-            AllOtherStroks = get_all_other_strocks([index, index + 1], inkml)
-            feature_vector = []
-            should_merge = False
+            for strok_id in clostest_strok_index:
+                strok2 = inkml.strokes[keys[strok_id]]
+                AllOtherStroks = get_all_other_strocks([index, strok_id], inkml)
+                feature_vector = []
+                should_merge = False
 
-            for func in feature_method_normalize:
-                feature = func(strok1, strok2)
+                for func in feature_method_normalize:
+                    feature = func(strok1, strok2)
+                    feature_vector += feature
+
+                bb = bounding_box(strok1+strok2)
+                width = bb[1]-bb[0] if bb[1]-bb[0]!=0 else 1
+                feature_vector[:] = [x / width for x in feature_vector]
+
+                for func in feature_method:
+                    feature = func(strok1, strok2)
+                    feature_vector += feature
+
+                feature = feature_PSC(strok1,strok2,AllOtherStroks)
                 feature_vector += feature
 
-            bb = bounding_box(strok1+strok2)
-            width = bb[1]-bb[0] if bb[1]-bb[0]!=0 else 1
-            feature_vector[:] = [x / width for x in feature_vector]
+                for obj in inkml.objects:
+                    if keys[index] in obj.trace_ids and keys[strok_id] in obj.trace_ids:
+                        should_merge = True
 
-            for func in feature_method:
-                feature = func(strok1, strok2)
-                feature_vector += feature
-
-            feature = feature_PSC(strok1,strok2,AllOtherStroks)
-            feature_vector += feature
-
-            for obj in inkml.objects:
-                if keys[index] in obj.trace_ids and keys[index+1] in obj.trace_ids:
-                    should_merge = True
-
-            feature_matrix.append(feature_vector)
-            truth_labels.append(should_merge)
+                feature_matrix.append(feature_vector)
+                truth_labels.append(should_merge)
 
         # to track progress
         done += 1

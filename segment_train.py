@@ -15,6 +15,7 @@ from sklearn.externals import joblib
 import sys
 import trained_weights
 import numpy as np
+import time
 
 def main(ar,flag):
     max_coord = 100
@@ -37,12 +38,18 @@ def segment_train(all_inkml, max_coord):
 
     # segment into objects
     print('Start feature extraction..')
+    start=time.time()
     feature_matrix, truth_labels = seg_fe.feature_extractor(all_inkml)
+    end=time.time()
+    print("Time taken to extract the features:", (end - start)/60, "min")
     with open("segment_traning_weight.csv", 'wb') as abc:
         np.savetxt(abc , feature_matrix , delimiter=",")
+    print("Features are stored in: segment_traning_weight.csv")
+    start=time.time()
     rf = classifiers.random_forest_train(feature_matrix,
                                          truth_labels)
-
+    end=time.time()
+    print("Time taken to train Random Forest:", (end - start)/60, "min")
     joblib.dump(trained_weights.TrainedWeights(rf), open('segment_weights.p', 'wb'), compress=True)
 
 def classifyTrain(all_inkml, max_coord):
@@ -52,6 +59,7 @@ def classifyTrain(all_inkml, max_coord):
 
     # get feature matrix for classifier training
     print('Start feature extraction..')
+    start = time.time()
     online_features = [cfe.OnlineFeature,cfe.polarFeature,cfe.endPointToCenter]
     offline_functions = [cfe.zoning, cfe.XaxisProjection, cfe.YaxisProjection, cfe.DiagonalProjections]
     feature_matrix, truth_labels = cfe.get_training_matrix(all_inkml,
@@ -59,11 +67,15 @@ def classifyTrain(all_inkml, max_coord):
                                                             online_features,
                                                             offline_functions)
 
+    end=time.time()
+    print("Time taken to extract the features:",(end-start)/60,"min")
     with open("classify_traning_weight.csv", 'wb') as abc:
         np.savetxt(abc, feature_matrix, delimiter=",")
+    start=time.time()
     rf = classifiers.random_forest_train(feature_matrix,
                                          truth_labels)
-
+    end=time.time()
+    print("Time taken to train Random Forest:", (end - start)/60, "min")
     joblib.dump(trained_weights.TrainedWeights(rf), open('classify_weights.p', 'wb'), compress=True)
 
     print('Training complete. Model files saved to disk.')
