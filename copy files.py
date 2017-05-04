@@ -11,7 +11,7 @@ for fileName in os.listdir("E:/PaternRec/Project2/test_out"):
         except:
                 print("File not found",fileName)
 '''
-fileName="TraningFile.txt"
+fileName="TestingFile.txt"
 
 with open(fileName) as fD:
     for line in fD:

@@ -16,7 +16,7 @@ import sys
 
 def main(ar):
 
-    max_coord = 100
+    max_coord = 200
 
     # load the trained models
     print('Reading models into memory')
@@ -32,7 +32,7 @@ def main(ar):
     pr_utils.scale_all_inkml(all_inkml, max_coord)
 
     # segment into objects
-    print('Start feature extraction..')
+    print('Start feature extraction for segmentation..')
     feature_matrix, truth_labels = seg_fe.feature_extractor(all_inkml)
     predicted_labels = classifiers.random_forest_test(segment_weights.RF, feature_matrix)
     assign_segmentation_labels(all_inkml, predicted_labels)
@@ -42,7 +42,7 @@ def main(ar):
     pr_utils.scale_all_segments(all_inkml, max_coord)
 
     # classify each segmented object
-    print('Start feature extraction..')
+    print('Start feature extraction for classifier..')
     online_features = [cfe.OnlineFeature,cfe.polarFeature,cfe.endPointToCenter]
     offline_functions = [cfe.zoning, cfe.XaxisProjection, cfe.YaxisProjection, cfe.DiagonalProjections]
     feature_matrix, truth_labels = cfe.get_training_matrix(all_inkml,

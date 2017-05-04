@@ -17,7 +17,7 @@ import trained_weights
 import numpy as np
 
 def main(ar,flag):
-    max_coord = 100
+    max_coord = 200
 
     # get a list of Inkml objects
     print('Reading files into memory')
@@ -36,7 +36,7 @@ def segment_train(all_inkml, max_coord):
     pr_utils.scale_all_inkml(all_inkml, max_coord)
 
     # segment into objects
-    print('Start feature extraction..')
+    print('Start feature extraction for segmentation..')
     feature_matrix, truth_labels = seg_fe.feature_extractor(all_inkml)
     with open("segment_traning_weight.csv", 'wb') as abc:
         np.savetxt(abc , feature_matrix , delimiter=",")
@@ -45,13 +45,16 @@ def segment_train(all_inkml, max_coord):
 
     joblib.dump(trained_weights.TrainedWeights(rf), open('segment_weights.p', 'wb'), compress=True)
 
+    print('Training complete. Model file saved to disk.')
+
+
 def classifyTrain(all_inkml, max_coord):
     # scale each segmented object
     print('Scaling symbol coordinates')
     pr_utils.scale_all_segments(all_inkml, max_coord)
 
     # get feature matrix for classifier training
-    print('Start feature extraction..')
+    print('Start feature extraction for classifier..')
     online_features = [cfe.OnlineFeature,cfe.polarFeature,cfe.endPointToCenter]
     offline_functions = [cfe.zoning, cfe.XaxisProjection, cfe.YaxisProjection, cfe.DiagonalProjections]
     feature_matrix, truth_labels = cfe.get_training_matrix(all_inkml,
@@ -66,7 +69,7 @@ def classifyTrain(all_inkml, max_coord):
 
     joblib.dump(trained_weights.TrainedWeights(rf), open('classify_weights.p', 'wb'), compress=True)
 
-    print('Training complete. Model files saved to disk.')
+    print('Training complete. Model file saved to disk.')
 
     # view symbols
     #pr_utils.print_view_symbols_html(all_inkml, max_coord)
@@ -80,5 +83,5 @@ if __name__ == '__main__':
         main(ar[1],int(ar[2])) # TrainINKML/extension
     else:
         print('Incorrect arguments. \nUsage: segment.py <path to inkml files>')
-        ar = input('Enter args: ')
-        main(ar,3)
+        ar = input('Enter args: ').split()
+        main(ar[0], int(ar[1]))
