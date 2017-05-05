@@ -16,7 +16,7 @@ import sys
 
 def main(ar):
 
-    max_coord = 200
+    max_coord = 50
 
     # load the trained models
     print('Reading models into memory')
@@ -33,9 +33,9 @@ def main(ar):
 
     # segment into objects
     print('Start feature extraction for segmentation..')
-    feature_matrix, truth_labels = seg_fe.feature_extractor(all_inkml)
+    feature_matrix, strokes_to_consider = seg_fe.feature_extractor(all_inkml)
     predicted_labels = classifiers.random_forest_test(segment_weights.RF, feature_matrix)
-    assign_segmentation_labels(all_inkml, predicted_labels)
+    assign_segmentation_labels(all_inkml, predicted_labels, strokes_to_consider)
 
     # scale each segmented object
     print('Scaling symbol coordinates')
@@ -55,7 +55,7 @@ def main(ar):
     print_to_file(all_inkml, 'test_out')
 
 
-def assign_segmentation_labels(all_inkml, predicted_labels):
+def assign_segmentation_labels(all_inkml, predicted_labels, strokes_to_consider):
 
     label_idx = 0
     for inkml in all_inkml:
@@ -70,7 +70,34 @@ def assign_segmentation_labels(all_inkml, predicted_labels):
                 current_segment = []
 
             label_idx += 1
+
         label_idx -= 1  # decrement label index after each file because last stroke is not part of predicted_labels
+
+    # considering temp_matrix
+    for stroke_pair in strokes_to_consider:
+        if predicted_labels[label_idx]:     # merge two objects if True
+            inkml = stroke_pair[0]
+            stroke1 = stroke_pair[1]
+            stroke2 = stroke_pair[2]
+            obj1 = None
+            obj2 = None
+
+            # find the two objects that contain the strokes
+            for obj in inkml.objects:
+                if stroke1 in obj.trace_ids:
+                    obj1 = obj
+                if stroke2 in obj.trace_ids:
+                    obj2 = obj
+
+            # nothing to do here if both are the same objects
+            if obj1 == obj2:
+                continue
+
+            # merge the two objects and delete the second one
+            obj1.trace_ids += obj2.trace_ids
+            inkml.objects.remove(obj2)
+
+        label_idx += 1
 
 
 def assign_classification_labels(all_inkml, predicted_labels):

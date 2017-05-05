@@ -40,6 +40,10 @@ class Inkml:
 
         return result
 
+    def sort_objects(self):
+        # sort objects by trace_ids
+        self.objects.sort(key=lambda x: float(min(x.trace_ids, key=float)))
+
     def __str__(self):
         return self.objects.__str__()
 

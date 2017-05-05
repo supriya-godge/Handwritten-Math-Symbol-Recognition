@@ -26,3 +26,4 @@ class SymbolObject:
         self.weight = str(weight)
 
 
+

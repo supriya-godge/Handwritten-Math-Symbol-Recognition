@@ -2,6 +2,7 @@ import numpy as np
 from pattern_rec_utils import *
 import math
 import numpy as np
+import collections
 
 def rough_trial(all_inkml):
     """
@@ -15,28 +16,168 @@ def rough_trial(all_inkml):
             inkml.create_object([trace_id])
 
 
-def feature_extractor(all_inkml):
+def calculate_bounding_center_all_stroks(inkml):
+    center=[]
+    keys = list(inkml.strokes.keys())
+    for key in keys:
+        strok=inkml.strokes[key]
+        center.append(bounding_box_center(strok))
+    return center
+
+
+def get_closest_center(centers, index):
+    value=[]
+    for center in centers[index+1:]:
+        value.append(distance(centers[index], center))
+    closest_index = value.index(min(value))
+    return closest_index
+
+
+def feature_extractor_helper(inkml, adjacent_strokes, idx):
+
+    feature_method_normalize = [feature_min_distance_betw_strockes, \
+                                feature_horizontal_overlapping_of_surrounding_rectangles, \
+                                feature_distance_horizontal_offset_startandEnd_position, \
+                                feature_distance_vertical_offset_startandEnd_position, \
+                                feature_backward_moment, \
+                                feature_distance_between_bounding_center, \
+                                feature_distance_average_center, \
+                                feature_maximal_point_pair_distance, \
+                                feature_horizntal_offset_strok1EndPoint_stroke2StartPoint, \
+                                feature_vertical_distance_between_boundingcenter]
+
+    feature_method = [feature_writing_slop, \
+                      feature_parallelity_of_stroks]
+
+    stroke1 = adjacent_strokes[0]
+    stroke2 = adjacent_strokes[1]
+
+    all_other_strokes = get_all_other_strokes(adjacent_strokes, inkml)
+
+    feature_vector = []
+
+    for func in feature_method_normalize:
+        feature = func(stroke1, stroke2)
+        feature_vector += feature
+
+    bb = bounding_box(stroke1 + stroke2)
+    width = bb[1] - bb[0] if bb[1] - bb[0] != 0 else 1
+    feature_vector[:] = [x / width for x in feature_vector]
+
+    for func in feature_method:
+        feature = func(stroke1, stroke2)
+        feature_vector += feature
+
+    feature = feature_PSC(stroke1, stroke2, all_other_strokes)
+    feature_vector += feature
+
+    if idx > 0:
+        should_merge = True  # set if the two adjacent strokes are in the same object
+    else:
+        should_merge = False
+
+    return feature_vector, should_merge
+
+
+def feature_extractor(all_inkml, training=False):
     """
-    Temporary.
+    Extract geometric and PSC features for segmentation
     Segments each stroke as a new symbol
-    :param all_inkml:
+
+    :param all_inkml: list of Inkml objects
+    :param training: boolean flag
     :return:
     """
-    feature_method_normalize=[feature_min_distance_betw_strockes,\
-                    feature_horizontal_overlapping_of_surrounding_rectangles,\
-                    feature_distance_horizontal_offset_startandEnd_position,\
-                    feature_distance_vertical_offset_startandEnd_position,\
-                    feature_backward_moment,\
-                    feature_parallelity_of_stroks,\
-                    feature_distance_between_bounding_center,\
-                    feature_distance_average_center,\
-                    feature_maximal_point_pair_distance,\
-                    feature_horizntal_offset_strok1EndPoint_stroke2StartPoint,\
-                    feature_vertical_distance_between_boundingcenter,\
-                    feature_writing_slop]
 
-    feature_method=[feature_writing_slop,\
-                    feature_parallelity_of_stroks]
+    feature_matrix = []
+    truth_labels = []   # used by training
+    strokes_to_consider = []     # used by testing
+    temp_matrix = []    # used by testing
+
+    # to track progress
+    total = len(all_inkml)
+    prev = 0
+    done = 0
+
+    for inkml in all_inkml:
+        if training:
+
+            adjacent_strokes = []  # stores two adjacent strokes
+            new_symbols = []  # stores the first stroke in each symbol
+            for obj in inkml.objects:
+                for idx, trace_id in enumerate(obj.trace_ids):
+                    adjacent_strokes.append(inkml.strokes[trace_id])
+
+                    if len(adjacent_strokes) == 3:  # make sure there are only two strokes in the list
+                        del adjacent_strokes[0]
+                    if len(adjacent_strokes) == 1:  # this should be True only for the 1st stroke in the 1st object
+                        continue
+
+                    feature_vector, should_merge = feature_extractor_helper(inkml, adjacent_strokes, idx)
+                    feature_matrix.append(feature_vector)
+                    truth_labels.append(should_merge)
+
+        else:   # testing
+            keys = list(inkml.strokes.keys())
+
+            bounding_centers = calculate_bounding_center_all_stroks(inkml)
+
+            for index in range(len(keys) - 1):
+                stroke1 = inkml.strokes[keys[index]]
+                stroke2 = inkml.strokes[keys[index + 1]]
+                adjacent_strokes = [stroke1, stroke2]
+
+                feature_vector, should_merge = feature_extractor_helper(inkml, adjacent_strokes, 0)
+                feature_matrix.append(feature_vector)
+
+                # get index of closest stroke to the right
+                closest_index = get_closest_center(bounding_centers, index)
+
+                # already considered if index + 1
+                if closest_index == index + 1:
+                    continue
+
+                # else compute features for these nearest strokes as well
+                stroke2 = inkml.strokes[keys[closest_index]]
+                adjacent_strokes = [stroke1, stroke2]
+                feature_vector, should_merge = feature_extractor_helper(inkml, adjacent_strokes, 0)
+                temp_matrix.append(feature_vector)      # store in a different matrix
+                strokes_to_consider.append([inkml, index, closest_index])
+
+
+        # to track progress
+        done += 1
+        track = int((done / total) * 100)
+        if track % 10 == 0 and track != prev:
+            prev = track
+            print('{}% done'.format(track))
+
+    feature_matrix += temp_matrix
+    feature_matrix = np.asarray(feature_matrix)
+
+    if training:
+        truth_labels = np.asarray(truth_labels)
+        return feature_matrix, truth_labels
+    else:
+        return feature_matrix, strokes_to_consider
+
+
+def old(all_inkml):
+    feature_method_normalize = [feature_min_distance_betw_strockes, \
+                                feature_horizontal_overlapping_of_surrounding_rectangles, \
+                                feature_distance_horizontal_offset_startandEnd_position, \
+                                feature_distance_vertical_offset_startandEnd_position, \
+                                feature_backward_moment, \
+                                feature_parallelity_of_stroks, \
+                                feature_distance_between_bounding_center, \
+                                feature_distance_average_center, \
+                                feature_maximal_point_pair_distance, \
+                                feature_horizntal_offset_strok1EndPoint_stroke2StartPoint, \
+                                feature_vertical_distance_between_boundingcenter, \
+                                feature_writing_slop]
+
+    feature_method = [feature_writing_slop, \
+                      feature_parallelity_of_stroks]
 
     feature_matrix = []
     truth_labels = []
@@ -47,48 +188,36 @@ def feature_extractor(all_inkml):
     done = 0
 
     for inkml in all_inkml:
+        keys = list(inkml.strokes.keys())
 
-        adjacent_strokes = []   # stores two adjacent strokes
-        new_symbols = []        # stores the first stroke in each symbol
-        for obj in inkml.objects:
-            for idx, trace_id in enumerate(obj.trace_ids):
-                adjacent_strokes.append(inkml.strokes[trace_id])
+        for index in range(len(keys) - 1):
+            strok1 = inkml.strokes[keys[index]]
+            strok2 = inkml.strokes[keys[index + 1]]
+            AllOtherStroks = get_all_other_strokes([strok1, strok2], inkml)
+            feature_vector = []
+            should_merge = False
 
-                if len(adjacent_strokes) == 3:  # make sure there are only two strokes in the list
-                    del adjacent_strokes[0]
-                if len(adjacent_strokes) == 1:  # this should be True only for the 1st stroke in the 1st object
-                    continue
-
-                stroke1 = adjacent_strokes[0]
-                stroke2 = adjacent_strokes[1]
-
-                all_other_strokes = get_all_other_strokes(adjacent_strokes, inkml)
-
-                feature_vector = []
-
-                for func in feature_method_normalize:
-                    feature = func(stroke1, stroke2)
-                    feature_vector += feature
-
-                bb = bounding_box(stroke1 + stroke2)
-                width = bb[1] - bb[0] if bb[1] - bb[0] != 0 else 1
-                feature_vector[:] = [x / width for x in feature_vector]
-
-                for func in feature_method:
-                    feature = func(stroke1, stroke2)
-                    feature_vector += feature
-
-                feature = feature_PSC(stroke1, stroke2, all_other_strokes)
+            for func in feature_method_normalize:
+                feature = func(strok1, strok2)
                 feature_vector += feature
 
-                if idx > 0:
-                    should_merge = True     # set if the two adjacent strokes are in the same object
-                else:
-                    should_merge = False
+            bb = bounding_box(strok1 + strok2)
+            width = bb[1] - bb[0] if bb[1] - bb[0] != 0 else 1
+            feature_vector[:] = [x / width for x in feature_vector]
 
-                feature_matrix.append(feature_vector)
-                truth_labels.append(should_merge)
+            for func in feature_method:
+                feature = func(strok1, strok2)
+                feature_vector += feature
 
+            feature = feature_PSC(strok1, strok2, AllOtherStroks)
+            feature_vector += feature
+
+            for obj in inkml.objects:
+                if keys[index] in obj.trace_ids and keys[index + 1] in obj.trace_ids:
+                    should_merge = True
+
+            feature_matrix.append(feature_vector)
+            truth_labels.append(should_merge)
 
         # to track progress
         done += 1
@@ -99,8 +228,8 @@ def feature_extractor(all_inkml):
 
     feature_matrix = np.asarray(feature_matrix)
     truth_labels = np.asarray(truth_labels)
-
     return feature_matrix, truth_labels
+
 
 
 def get_all_other_strokes(strokes, inkml):
@@ -207,7 +336,7 @@ def feature_distance_average_center(strok1,strok2):
 
 def bounding_box_center(strok1):
     s1=get_Min_Max(strok1)
-    s1_center = np.array([math.fabs(s1[0]-s1[1])/2,math.fabs(s1[2]-s1[3])/2])
+    s1_center = np.array([math.fabs(s1[0]-s1[1])/2, math.fabs(s1[2]-s1[3])/2])
     return s1_center
 
 def feature_maximal_point_pair_distance(strok1,strok2):

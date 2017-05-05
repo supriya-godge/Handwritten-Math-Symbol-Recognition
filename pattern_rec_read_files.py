@@ -97,6 +97,9 @@ def read_file(file_path, training=False):
             obj = inkml.create_object(obj_strokes)
             obj.set_details(obj_id.get('href'), label.string)
 
+        # sort the newly created objects by trace_ids
+        inkml.sort_objects()
+
     return inkml
 
 
