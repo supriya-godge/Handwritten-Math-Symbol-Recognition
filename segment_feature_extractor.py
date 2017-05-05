@@ -49,9 +49,10 @@ def feature_extractor(all_inkml):
     for inkml in all_inkml:
 
         adjacent_strokes = []   # stores two adjacent strokes
-        for obj in object:
-            for idx, stroke in enumerate(obj.trace_ids):
-                adjacent_strokes.append(stroke)
+        new_symbols = []        # stores the first stroke in each symbol
+        for obj in inkml.objects:
+            for idx, trace_id in enumerate(obj.trace_ids):
+                adjacent_strokes.append(inkml.strokes[trace_id])
 
                 if len(adjacent_strokes) == 3:  # make sure there are only two strokes in the list
                     del adjacent_strokes[0]
@@ -104,9 +105,9 @@ def feature_extractor(all_inkml):
 
 def get_all_other_strokes(strokes, inkml):
     all_other=[]
-    for key in inkml.strokes.keys():
-        if key not in strokes:
-            all_other += inkml.strokes[key]
+    for trace_id, coords in inkml.strokes.items():
+        if coords not in strokes:
+            all_other += coords
     return all_other
 
 

@@ -35,6 +35,10 @@ def segment_train(all_inkml, max_coord):
     print('Scaling expression coordinates')
     pr_utils.scale_all_inkml(all_inkml, max_coord)
 
+    #joblib.dump(all_inkml, open('scaled_expressions.p', 'wb'), compress=True)
+    # print('Reading scaled expressions from pickle file into memory')
+    #all_inkml = joblib.load('scaled_expressions.p', "rb")
+
     # segment into objects
     print('Start feature extraction for segmentation..')
     feature_matrix, truth_labels = seg_fe.feature_extractor(all_inkml)
