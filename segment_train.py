@@ -5,6 +5,7 @@ Program to read in INKML files and segment symbols
 @author: Supriya Godge (spg5835@rit.edu)
 """
 
+import winsound
 import sys
 import pattern_rec_read_files as pr_files
 import pattern_rec_utils as pr_utils
@@ -35,19 +36,15 @@ def segment_train(all_inkml, max_coord):
     # scale coordinates in all Inkml objects
     print('Scaling expression coordinates')
     pr_utils.scale_all_inkml(all_inkml, max_coord)
+    print('Start preproseccing for segmentation..')
+    pr_utils.preprocessing(all_inkml)
 
     # segment into objects
     print('Start feature extraction for segmentation..')
     start = time.time()
     feature_matrix, truth_labels = seg_fe.feature_extractor(all_inkml, training=True)
     end = time.time()
-    print("Time taken to extract the features:", (end - start)/60, "min")
-
-    '''
-    with open("segment_traning_weight.csv", 'wb') as abc:
-        np.savetxt(abc , feature_matrix , delimiter=",")
-    print("Features are stored in: segment_traning_weight.csv")
-    '''
+    print("Time taken to extract the features for segmentation:", (end - start)/60, "min")
 
     start=time.time()
     rf = classifiers.random_forest_train(feature_matrix,
@@ -66,21 +63,18 @@ def classify_train(all_inkml, max_coord):
 
     # get feature matrix for classifier training
     print('Start feature extraction for classifier..')
+
     start = time.time()
     online_features = [cfe.OnlineFeature,cfe.polarFeature,cfe.endPointToCenter]
     offline_functions = [cfe.zoning, cfe.XaxisProjection, cfe.YaxisProjection, cfe.DiagonalProjections]
+    start=time.time()
     feature_matrix, truth_labels = cfe.get_training_matrix(all_inkml,
                                                             max_coord,
                                                             online_features,
                                                             offline_functions)
 
     end = time.time()
-    print("Time taken to extract the features:", round((end-start)/60, 2), "min")
-
-    '''
-    with open("classify_traning_weight.csv", 'wb') as abc:
-        np.savetxt(abc, feature_matrix, delimiter=",")
-    '''
+    print("Time taken to extract the features for classification:", round((end-start)/60, 2), "min")
 
     start = time.time()
     rf = classifiers.random_forest_train(feature_matrix,
@@ -105,3 +99,4 @@ if __name__ == '__main__':
         print('Incorrect arguments. \nUsage: segment.py <path to inkml files> <1: segment, 2:classify>')
         ar = input('Enter args: ').split()
         main(ar[0], int(ar[1]))
+        winsound.Beep(300, 2000)
