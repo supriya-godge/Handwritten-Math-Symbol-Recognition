@@ -144,7 +144,6 @@ def feature_extractor(all_inkml, training=False):
                 temp_matrix.append(feature_vector)      # store in a different matrix
                 strokes_to_consider.append([inkml, index, closest_index])
 
-
         # to track progress
         done += 1
         track = int((done / total) * 100)
@@ -160,77 +159,6 @@ def feature_extractor(all_inkml, training=False):
         return feature_matrix, truth_labels
     else:
         return feature_matrix, strokes_to_consider
-
-
-def old(all_inkml):
-    feature_method_normalize = [feature_min_distance_betw_strockes, \
-                                feature_horizontal_overlapping_of_surrounding_rectangles, \
-                                feature_distance_horizontal_offset_startandEnd_position, \
-                                feature_distance_vertical_offset_startandEnd_position, \
-                                feature_backward_moment, \
-                                feature_parallelity_of_stroks, \
-                                feature_distance_between_bounding_center, \
-                                feature_distance_average_center, \
-                                feature_maximal_point_pair_distance, \
-                                feature_horizntal_offset_strok1EndPoint_stroke2StartPoint, \
-                                feature_vertical_distance_between_boundingcenter, \
-                                feature_writing_slop]
-
-    feature_method = [feature_writing_slop, \
-                      feature_parallelity_of_stroks]
-
-    feature_matrix = []
-    truth_labels = []
-
-    # to track progress
-    total = len(all_inkml)
-    prev = 0
-    done = 0
-
-    for inkml in all_inkml:
-        keys = list(inkml.strokes.keys())
-
-        for index in range(len(keys) - 1):
-            strok1 = inkml.strokes[keys[index]]
-            strok2 = inkml.strokes[keys[index + 1]]
-            AllOtherStroks = get_all_other_strokes([strok1, strok2], inkml)
-            feature_vector = []
-            should_merge = False
-
-            for func in feature_method_normalize:
-                feature = func(strok1, strok2)
-                feature_vector += feature
-
-            bb = bounding_box(strok1 + strok2)
-            width = bb[1] - bb[0] if bb[1] - bb[0] != 0 else 1
-            feature_vector[:] = [x / width for x in feature_vector]
-
-            for func in feature_method:
-                feature = func(strok1, strok2)
-                feature_vector += feature
-
-            feature = feature_PSC(strok1, strok2, AllOtherStroks)
-            feature_vector += feature
-
-            for obj in inkml.objects:
-                if keys[index] in obj.trace_ids and keys[index + 1] in obj.trace_ids:
-                    should_merge = True
-
-            feature_matrix.append(feature_vector)
-            truth_labels.append(should_merge)
-
-        # to track progress
-        done += 1
-        track = int((done / total) * 100)
-        if track % 10 == 0 and track != prev:
-            prev = track
-            print('{}% done'.format(track))
-
-    feature_matrix = np.asarray(feature_matrix)
-    truth_labels = np.asarray(truth_labels)
-    return feature_matrix, truth_labels
-
-
 
 def get_all_other_strokes(strokes, inkml):
     all_other=[]

@@ -7,6 +7,7 @@ Utility modules for various Pattern Recognition functions
 import numpy as np
 import sys
 
+
 def scale_all_inkml(all_inkml, max_coord):
     """
     Scale and update all the coordinates in the Inkml objects.
@@ -27,7 +28,6 @@ def scale_all_inkml(all_inkml, max_coord):
 
         # update this Inkml object with scaled coordinates
         inkml.update_strokes(all_scaled_strokes)
-
 
 
 def scale_all_segments(all_inkml, max_coord):
@@ -55,32 +55,6 @@ def scale_all_segments(all_inkml, max_coord):
             # update this segmented symbol with scaled coordinates
             for index, trace_id in enumerate(obj.trace_ids):
                 inkml.strokes[trace_id] = symbol_strokes[index]
-
-
-'''
-def get_Min_Max_Coordintes(strockes):
-    point = []
-    if not isinstance(strockes[0],list):
-        return strockes[0],strockes[0],strockes[1],strockes[1]
-    print("strokes", strockes)
-    if isinstance(strockes[0][0],list):
-        for stroke in strockes:
-            point+=stroke
-        temp=np.asarray(point)
-    else:
-        temp=np.asarray(strockes)
-    print("temp",temp)
-    # compute the minimum and maximum of all x and y coordinates
-    min_x = np.min(temp[:,0])
-    min_y = np.min(temp[:,1])
-    max_x = np.max(temp[:,0])
-    max_y = np.max(temp[:,1])
-
-    return min_x,max_x,min_y,max_y,point
-'''
-
-
-
 
 
 def get_scaled_symbol(strokes, max_coord, isSegment=False):
@@ -165,8 +139,9 @@ def write_to_lg(all_inkml, path=''):
     """
 
     for inkml in all_inkml:
-        with open(path+inkml.ui+'.lg') as new_file:
-            new_file.write(inkml.get_objects_str)
+        with open(path+'/'+inkml.ui+'.lg') as new_file:
+            new_file.write(inkml.get_objects_str())
+    print('Files written to disk')
 
 
 def print_view_symbols_html(all_inkml, max_coord):

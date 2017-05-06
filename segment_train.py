@@ -18,18 +18,18 @@ import numpy as np
 import time
 
 def main(ar,flag):
-    max_coord = 50
+    max_coord = 100
 
     # get a list of Inkml objects
     print('Reading files into memory')
     all_inkml = pr_files.get_all_inkml_files(ar, True)
-    if flag==1:
+    if flag == 1:
         segment_train(all_inkml,max_coord)
-    if flag==2:
-        classifyTrain(all_inkml,max_coord)
-    if flag==3:
+    elif flag == 2:
+        classify_train(all_inkml,max_coord)
+    else:
         segment_train(all_inkml, max_coord)
-        classifyTrain(all_inkml, max_coord)
+        classify_train(all_inkml, max_coord)
 
 def segment_train(all_inkml, max_coord):
     # scale coordinates in all Inkml objects
@@ -55,11 +55,11 @@ def segment_train(all_inkml, max_coord):
     end=time.time()
     print("Time taken to train Random Forest:", round((end - start)/60, 2), "min")
 
-    joblib.dump(trained_weights.TrainedWeights(rf), open('segment_weights.p', 'wb'), compress=True)
+    joblib.dump(trained_weights.TrainedWeights(rf), open('all_segment_weights.p', 'wb'), compress=True)
     print('Training complete. Model file saved to disk.')
 
 
-def classifyTrain(all_inkml, max_coord):
+def classify_train(all_inkml, max_coord):
     # scale each segmented object
     print('Scaling symbol coordinates')
     pr_utils.scale_all_segments(all_inkml, max_coord)
@@ -88,7 +88,7 @@ def classifyTrain(all_inkml, max_coord):
     end = time.time()
     print("Time taken to train Random Forest:", (end - start)/60, "min")
 
-    joblib.dump(trained_weights.TrainedWeights(rf), open('classify_weights.p', 'wb'), compress=True)
+    joblib.dump(trained_weights.TrainedWeights(rf), open('all_classify_weights.p', 'wb'), compress=True)
     print('Training complete. Model file saved to disk.')
 
     # view symbols

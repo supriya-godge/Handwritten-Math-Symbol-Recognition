@@ -16,7 +16,7 @@ import sys
 
 def main(ar):
 
-    max_coord = 50
+    max_coord = 100
 
     # load the trained models
     print('Reading models into memory')
@@ -120,6 +120,13 @@ def assign_classification_labels(all_inkml, predicted_labels):
 
 
 def print_to_file(all_inkml, path):
+    """
+    Write a new .lg file in the Object format for each inkml file.
+
+    :param all_inkml: list of Inkml objects
+    :param path: path to output directory
+    :return: None
+    """
 
     for inkml in all_inkml:
         file_name = path + '/' + inkml.ui + '.lg'
