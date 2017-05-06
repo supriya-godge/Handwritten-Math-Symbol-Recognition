@@ -224,3 +224,16 @@ def draw_svg(max_coord, all_strokes):
     svg_html = '\n<svg height="' + str(ht) + '" width="' + str(width+2) + '">' + svg_html
 
     return svg_html
+
+
+def preprocessing(all_inkm):
+
+    for inkml in all_inkm:
+        keys=list(inkml.strokes.keys())
+        for key in keys:
+            strok = inkml.strokes[key]
+            for index in range(1,len(strok)-1):
+                prev = np.asarray(inkml.strokes[key][index-1])
+                current = np.asarray(inkml.strokes[key][index])
+                next = np.asarray(inkml.strokes[key][index+1])
+                inkml.strokes[key][index]=list((prev+current+next)/3)

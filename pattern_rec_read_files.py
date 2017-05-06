@@ -10,6 +10,7 @@ import re
 from bs4 import BeautifulSoup
 from info_inkml import Inkml
 import sys
+import numpy as np
 
 
 def get_all_inkml_files(ar, training=False):
@@ -98,6 +99,11 @@ def read_file(file_path, training=False):
             obj.set_details(obj_id.get('href'), label.string)
 
     return inkml
+
+
+
+
+
 
 
 def read_file_Traning(file_path):

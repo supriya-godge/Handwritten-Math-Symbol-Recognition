@@ -5,7 +5,7 @@ Program to read in INKML files and segment symbols
 @author: Supriya Godge (spg5835@rit.edu)
 """
 
-import sys
+import time
 import pattern_rec_read_files as pr_files
 import pattern_rec_utils as pr_utils
 import segment_feature_extractor as seg_fe
@@ -13,6 +13,7 @@ import classify_feature_extractor as cfe
 import classifiers
 from sklearn.externals import joblib
 import sys
+import winsound
 
 def main(ar):
 
@@ -31,9 +32,12 @@ def main(ar):
     print('Scaling expression coordinates')
     pr_utils.scale_all_inkml(all_inkml, max_coord)
 
+    # preprocessing all Inkml object stroks
+    pr_utils.preprocessing(all_inkml)
     # segment into objects
     print('Start feature extraction for segmentation..')
     feature_matrix, truth_labels = seg_fe.feature_extractor(all_inkml)
+
     predicted_labels = classifiers.random_forest_test(segment_weights.RF, feature_matrix)
     assign_segmentation_labels(all_inkml, predicted_labels)
 
@@ -52,7 +56,7 @@ def main(ar):
     predicted_labels = classifiers.random_forest_test(classify_weights.RF, feature_matrix)
     assign_classification_labels(all_inkml, predicted_labels)
 
-    print_to_file(all_inkml, 'test_out')
+    print_to_file(all_inkml, 'E:/PaternRec/Project2/test_out_preprocess')
 
 
 def assign_segmentation_labels(all_inkml, predicted_labels):
@@ -112,3 +116,4 @@ if __name__ == '__main__':
               '<segmentation model file> <classification model file>')
         ar = input('Enter args: ').split(' ')
         main(ar)
+        winsound.beep(300,200)
