@@ -7,6 +7,7 @@ Class file to store information about a .inkml file
 
 import collections
 from info_symbol_object import SymbolObject
+from info_symbol_relation import SymbolRelation
 
 
 class Inkml:
@@ -31,6 +32,11 @@ class Inkml:
         obj = SymbolObject(trace_ids)
         self.objects.append(obj)
         return obj
+
+    def create_relation(self, object_id1=None, object_id2=None, label=None):
+        rel = SymbolRelation(object_id1, object_id2, label)
+        self.relations.append(rel)
+        return rel
 
     def get_objects_str(self):
         result = ''

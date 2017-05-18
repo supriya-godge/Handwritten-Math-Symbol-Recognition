@@ -22,11 +22,12 @@ def main(ar):
     max_coord = 100
 
     path = ar[0]
-    mode = int(ar[1])
+    path_lg = ar[1]
+    mode = int(ar[2])
 
     # get a list of Inkml objects
     print('Reading files into memory')
-    all_inkml = pr_files.get_all_inkml_files(path, True)
+    all_inkml = pr_files.get_all_inkml_files(path, True, path_lg)
 
     if not mode or mode == 1:   # not 0 = True
         segment_train(all_inkml, max_coord)
@@ -103,10 +104,10 @@ def classify_train(all_inkml, max_coord):
 
 if __name__ == '__main__':
     ar = sys.argv
-    if len(ar) == 3:
+    if len(ar) == 4:
         main(ar[1:])
     else:
-        print('Incorrect arguments. \nUsage: segment_train.py <path to inkml files>'
+        print('Incorrect arguments. \nUsage: segment_train.py <path to inkml files> <path to lg files>'
               ' <0:all 1:segment 2:classify 3:parse>')
         ar = input('Enter args: ').split()
         main(ar)
