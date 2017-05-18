@@ -7,6 +7,7 @@ Utility modules for various Pattern Recognition functions
 import numpy as np
 import sys
 
+
 def scale_all_inkml(all_inkml, max_coord):
     """
     Scale and update all the coordinates in the Inkml objects.
@@ -27,7 +28,6 @@ def scale_all_inkml(all_inkml, max_coord):
 
         # update this Inkml object with scaled coordinates
         inkml.update_strokes(all_scaled_strokes)
-
 
 
 def scale_all_segments(all_inkml, max_coord):
@@ -55,32 +55,6 @@ def scale_all_segments(all_inkml, max_coord):
             # update this segmented symbol with scaled coordinates
             for index, trace_id in enumerate(obj.trace_ids):
                 inkml.strokes[trace_id] = symbol_strokes[index]
-
-
-'''
-def get_Min_Max_Coordintes(strockes):
-    point = []
-    if not isinstance(strockes[0],list):
-        return strockes[0],strockes[0],strockes[1],strockes[1]
-    print("strokes", strockes)
-    if isinstance(strockes[0][0],list):
-        for stroke in strockes:
-            point+=stroke
-        temp=np.asarray(point)
-    else:
-        temp=np.asarray(strockes)
-    print("temp",temp)
-    # compute the minimum and maximum of all x and y coordinates
-    min_x = np.min(temp[:,0])
-    min_y = np.min(temp[:,1])
-    max_x = np.max(temp[:,0])
-    max_y = np.max(temp[:,1])
-
-    return min_x,max_x,min_y,max_y,point
-'''
-
-
-
 
 
 def get_scaled_symbol(strokes, max_coord, isSegment=False):
@@ -155,20 +129,6 @@ def get_scaled_symbol(strokes, max_coord, isSegment=False):
         return symbol
 
 
-def write_to_lg(all_inkml, path=''):
-    """
-    Write a new .lg file in the Object format for each inkml file.
-
-    :param all_inkml: list of Inkml objects
-    :param path: path to output directory
-    :return: None
-    """
-
-    for inkml in all_inkml:
-        with open(path+inkml.ui+'.lg') as new_file:
-            new_file.write(inkml.get_objects_str)
-
-
 def print_view_symbols_html(all_inkml, max_coord):
     """
     Prints all input strokes as a normalized svg image in html
@@ -227,7 +187,6 @@ def draw_svg(max_coord, all_strokes):
 
 
 def preprocessing(all_inkm):
-
     for inkml in all_inkm:
         keys=list(inkml.strokes.keys())
         for key in keys:
@@ -237,3 +196,86 @@ def preprocessing(all_inkm):
                 current = np.asarray(inkml.strokes[key][index])
                 next = np.asarray(inkml.strokes[key][index+1])
                 inkml.strokes[key][index]=list((prev+current+next)/3)
+
+
+
+def assign_segmentation_labels(all_inkml, predicted_labels, strokes_to_consider):
+
+    label_idx = 0
+    for inkml in all_inkml:
+        current_segment = []
+        for trace_id in inkml.strokes:
+            current_segment.append(trace_id)
+
+            is_last_stroke = trace_id == next(reversed(inkml.strokes))  # boolean flag set if trace_id is last stroke
+
+            if is_last_stroke or predicted_labels[label_idx] == False:
+                inkml.create_object(current_segment)
+                current_segment = []
+
+            label_idx += 1
+
+        label_idx -= 1  # decrement label index after each file because last stroke is not part of predicted_labels
+
+    # considering temp_matrix
+    for stroke_pair in strokes_to_consider:
+        if predicted_labels[label_idx]:     # merge two objects if True
+            inkml = stroke_pair[0]
+            stroke1 = stroke_pair[1]
+            stroke2 = stroke_pair[2]
+            obj1 = None
+            obj2 = None
+
+            # find the two objects that contain the strokes
+            for obj in inkml.objects:
+                if stroke1 in obj.trace_ids:
+                    obj1 = obj
+                if stroke2 in obj.trace_ids:
+                    obj2 = obj
+
+            # nothing to do here if both are the same objects
+            if obj1 == obj2:
+                continue
+
+            # merge the two objects and delete the second one
+            obj1.trace_ids += obj2.trace_ids
+            inkml.objects.remove(obj2)
+
+        label_idx += 1
+
+
+def assign_classification_labels(all_inkml, predicted_labels):
+    label_idx = 0
+
+    for inkml in all_inkml:
+        symbol_count = {}
+        for obj in inkml.objects:
+            label_symbol = predicted_labels[label_idx]
+
+            if label_symbol in symbol_count:
+                symbol_count[label_symbol] += 1
+            else:
+                symbol_count[label_symbol] = 1
+
+            object_id = label_symbol + '_' + str(symbol_count[label_symbol])
+            obj.set_details(object_id, label_symbol)
+
+            label_idx += 1
+
+
+def print_to_file(all_inkml, path):
+    """
+    Write a new .lg file in the Object format for each inkml file.
+
+    :param all_inkml: list of Inkml objects
+    :param path: path to output directory
+    :return: None
+    """
+
+    for inkml in all_inkml:
+        file_name = path + '/' + inkml.ui + '.lg'
+        with open(file_name, 'w') as new_file:
+            out = inkml.get_objects_str()
+            new_file.write(out)
+
+    print('Files written to disk')

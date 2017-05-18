@@ -18,65 +18,81 @@ import trained_weights
 import numpy as np
 import time
 
-def main(ar,flag):
-    max_coord = 50
+def main(ar):
+    max_coord = 100
+
+    path = ar[0]
+    mode = int(ar[1])
 
     # get a list of Inkml objects
     print('Reading files into memory')
-    all_inkml = pr_files.get_all_inkml_files(ar, True)
-    if flag==1:
-        segment_train(all_inkml,max_coord)
-    if flag==2:
-        classifyTrain(all_inkml,max_coord)
-    if flag==3:
+    all_inkml = pr_files.get_all_inkml_files(path, True)
+
+    if not mode or mode == 1:   # not 0 = True
         segment_train(all_inkml, max_coord)
-        classifyTrain(all_inkml, max_coord)
+    if not mode or mode == 2:
+        classify_train(all_inkml, max_coord)
+    if not mode or mode == 3:
+        parse_train(all_inkml, max_coord)
+
+
+def parse_train(all_inkml, max_coord):
+    pass
+
 
 def segment_train(all_inkml, max_coord):
+
     # scale coordinates in all Inkml objects
     print('Scaling expression coordinates')
     pr_utils.scale_all_inkml(all_inkml, max_coord)
-    print('Start preproseccing for segmentation..')
+    print('Start pre-processing for segmentation..')
     pr_utils.preprocessing(all_inkml)
+
     # segment into objects
     print('Start feature extraction for segmentation..')
-    start=time.time()
-    feature_matrix, truth_labels = seg_fe.feature_extractor(all_inkml)
+    start = time.time()
+    feature_matrix, truth_labels = seg_fe.feature_extractor(all_inkml, training=True)
     end = time.time()
-    print("Time taken feature extraction for Segmentation:", (end - start)/60,"min")
-    with open("segment_traning_weight.csv", 'wb') as abc:
-        np.savetxt(abc , feature_matrix , delimiter=",")
+    print("Time taken to extract the features for segmentation:", round((end - start)/60), "min")
+
+    np.savetxt('segment_feature_matrix.csv', feature_matrix, delimiter=',')
+
+    start=time.time()
     rf = classifiers.random_forest_train(feature_matrix,
                                          truth_labels)
+    end = time.time()
+    print("Time taken to train Random Forest:", round((end - start)/60, 2), "min")
 
-    joblib.dump(trained_weights.TrainedWeights(rf), open('segment_weights.p', 'wb'), compress=True)
-
+    joblib.dump(trained_weights.TrainedWeights(rf), open('final_segment_weights.p', 'wb'), compress=True)
     print('Training complete. Model file saved to disk.')
 
 
-def classifyTrain(all_inkml, max_coord):
+def classify_train(all_inkml, max_coord):
     # scale each segmented object
     print('Scaling symbol coordinates')
     pr_utils.scale_all_segments(all_inkml, max_coord)
+
     # get feature matrix for classifier training
     print('Start feature extraction for classifier..')
-    online_features = [cfe.OnlineFeature,cfe.polarFeature,cfe.endPointToCenter]
+
+    start = time.time()
+    online_features = [cfe.OnlineFeature, cfe.polarFeature, cfe.endPointToCenter]
     offline_functions = [cfe.zoning, cfe.XaxisProjection, cfe.YaxisProjection, cfe.DiagonalProjections]
-    start=time.time()
     feature_matrix, truth_labels = cfe.get_training_matrix(all_inkml,
                                                             max_coord,
                                                             online_features,
                                                             offline_functions)
-    end=time.time()
-    print("Time taken feature extraction for classification:",(end-start)/60,"min")
 
-    with open("classify_traning_weight.csv", 'wb') as abc:
-        np.savetxt(abc, feature_matrix, delimiter=",")
+    end = time.time()
+    print("Time taken to extract the features for classification:", round((end-start)/60, 2), "min")
+
+    start = time.time()
     rf = classifiers.random_forest_train(feature_matrix,
                                          truth_labels)
+    end = time.time()
+    print("Time taken to train Random Forest:", round((end - start)/60), "min")
 
-    joblib.dump(trained_weights.TrainedWeights(rf), open('classify_weights.p', 'wb'), compress=True)
-
+    joblib.dump(trained_weights.TrainedWeights(rf), open('final_classify_weights.p', 'wb'), compress=True)
     print('Training complete. Model file saved to disk.')
 
     # view symbols
@@ -88,9 +104,10 @@ def classifyTrain(all_inkml, max_coord):
 if __name__ == '__main__':
     ar = sys.argv
     if len(ar) == 3:
-        main(ar[1],int(ar[2])) # TrainINKML/extension
+        main(ar[1:])
     else:
-        print('Incorrect arguments. \nUsage: segment.py <path to inkml files>')
+        print('Incorrect arguments. \nUsage: segment_train.py <path to inkml files>'
+              ' <0:all 1:segment 2:classify 3:parse>')
         ar = input('Enter args: ').split()
-        main(ar[0], int(ar[1]))
+        main(ar)
         winsound.Beep(300, 2000)
