@@ -22,16 +22,23 @@ def main(ar):
     max_coord = 100
 
     path = ar[0]
-    mode = ar[1]
+    mode = int(ar[1])
 
     # get a list of Inkml objects
     print('Reading files into memory')
     all_inkml = pr_files.get_all_inkml_files(path, True)
 
-    if mode != 2:
+    if not mode or mode == 1:   # not 0 = True
         segment_train(all_inkml, max_coord)
-    if mode != 1:
+    if not mode or mode == 2:
         classify_train(all_inkml, max_coord)
+    if not mode or mode == 3:
+        parse_train(all_inkml, max_coord)
+
+
+def parse_train(all_inkml, max_coord):
+    pass
+
 
 def segment_train(all_inkml, max_coord):
 
@@ -97,9 +104,10 @@ def classify_train(all_inkml, max_coord):
 if __name__ == '__main__':
     ar = sys.argv
     if len(ar) == 3:
-        main(ar[1],int(ar[2])) # TrainINKML/extension
+        main(ar[1:])
     else:
-        print('Incorrect arguments. \nUsage: segment_train.py <path to inkml files> <1:segment 2:classify 3:both>')
+        print('Incorrect arguments. \nUsage: segment_train.py <path to inkml files>'
+              ' <0:all 1:segment 2:classify 3:parse>')
         ar = input('Enter args: ').split()
         main(ar)
         winsound.Beep(300, 2000)

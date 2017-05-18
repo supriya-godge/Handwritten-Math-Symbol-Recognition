@@ -18,11 +18,31 @@ import sys
 def main(ar):
 
     max_coord = 100
+    parser_ver = int(ar[4])
+
+    if parser_ver == 1:
+        parser_ver1()
+    if parser_ver == 2:
+        parser_ver2(ar, max_coord)
+
+
+def parser_ver1(ar, max_coord):
+    """
+    Run the program with parser version 1
+    """
+    parser_weights = joblib.load(open(ar[3], "rb"))   # read trained parser model
+
+
+def parser_ver2(ar, max_coord):
+    """
+    Run the program with parser version 2
+    """
 
     # load the trained models
     print('Reading models into memory')
     segment_weights = joblib.load(open(ar[1], "rb"))    # read trained segmentation model
     classify_weights = joblib.load(open(ar[2], "rb"))   # read trained classification model
+    parser_weights = joblib.load(open(ar[3], "rb"))   # read trained parser model
 
     # get a list of Inkml objects
     print('Reading files into memory')
@@ -63,10 +83,10 @@ def main(ar):
 
 if __name__ == '__main__':
     ar = sys.argv
-    if len(ar) == 4:
+    if len(ar) == 6:
         main(ar[1:])
     else:
         print('Incorrect arguments. \nUsage: segment_test.py <path to inkml files> '
-              '<segmentation model file> <classification model file>')
+              '<segmentation model file> <classification model file> <parser model file> <parser version>')
         ar = input('Enter args: ').split(' ')
         main(ar)
