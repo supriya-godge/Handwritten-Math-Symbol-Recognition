@@ -18,6 +18,7 @@ class Inkml:
         self.ui = ui
         self.strokes = collections.OrderedDict()
         self.objects = []
+        self.relations = []
 
     def add_stroke(self, trace_id, coords):
         self.strokes[trace_id] = coords
