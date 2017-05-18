@@ -13,12 +13,12 @@ class Inkml:
     """
     Class to contain information about each inkml file.
     """
-    __slots__ = 'ui', 'strokes', 'objects'
 
     def __init__(self, ui):
         self.ui = ui
         self.strokes = collections.OrderedDict()
         self.objects = []
+        self.relations = []
 
     def add_stroke(self, trace_id, coords):
         self.strokes[trace_id] = coords
