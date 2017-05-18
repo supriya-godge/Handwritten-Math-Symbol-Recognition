@@ -6,7 +6,6 @@ Program to read in INKML files and segment symbols
 """
 
 import winsound
-import sys
 import pattern_rec_read_files as pr_files
 import pattern_rec_utils as pr_utils
 import segment_feature_extractor as seg_fe
@@ -17,6 +16,7 @@ import sys
 import trained_weights
 import numpy as np
 import time
+
 
 def main(ar):
     max_coord = 100
