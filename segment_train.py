@@ -18,25 +18,22 @@ import trained_weights
 import numpy as np
 import time
 
-def main(ar,flag):
+def main(ar):
     max_coord = 100
 
     # get a list of Inkml objects
     print('Reading files into memory')
     all_inkml = pr_files.get_all_inkml_files(ar, True)
-    if flag == 1:
-        segment_train(all_inkml,max_coord)
-    elif flag == 2:
-        classify_train(all_inkml,max_coord)
-    else:
-        segment_train(all_inkml, max_coord)
-        classify_train(all_inkml, max_coord)
+
+    segment_train(all_inkml, max_coord)
+    classify_train(all_inkml, max_coord)
 
 def segment_train(all_inkml, max_coord):
+
     # scale coordinates in all Inkml objects
     print('Scaling expression coordinates')
     pr_utils.scale_all_inkml(all_inkml, max_coord)
-    print('Start preproseccing for segmentation..')
+    print('Start pre-processing for segmentation..')
     pr_utils.preprocessing(all_inkml)
 
     # segment into objects
@@ -44,15 +41,17 @@ def segment_train(all_inkml, max_coord):
     start = time.time()
     feature_matrix, truth_labels = seg_fe.feature_extractor(all_inkml, training=True)
     end = time.time()
-    print("Time taken to extract the features for segmentation:", (end - start)/60, "min")
+    print("Time taken to extract the features for segmentation:", round((end - start)/60), "min")
+
+    np.savetxt('segment_feature_matrix.csv', feature_matrix, delimiter=',')
 
     start=time.time()
     rf = classifiers.random_forest_train(feature_matrix,
                                          truth_labels)
-    end=time.time()
+    end = time.time()
     print("Time taken to train Random Forest:", round((end - start)/60, 2), "min")
 
-    joblib.dump(trained_weights.TrainedWeights(rf), open('all_segment_weights.p', 'wb'), compress=True)
+    joblib.dump(trained_weights.TrainedWeights(rf), open('final_segment_weights.p', 'wb'), compress=True)
     print('Training complete. Model file saved to disk.')
 
 
@@ -65,9 +64,8 @@ def classify_train(all_inkml, max_coord):
     print('Start feature extraction for classifier..')
 
     start = time.time()
-    online_features = [cfe.OnlineFeature,cfe.polarFeature,cfe.endPointToCenter]
+    online_features = [cfe.OnlineFeature, cfe.polarFeature, cfe.endPointToCenter]
     offline_functions = [cfe.zoning, cfe.XaxisProjection, cfe.YaxisProjection, cfe.DiagonalProjections]
-    start=time.time()
     feature_matrix, truth_labels = cfe.get_training_matrix(all_inkml,
                                                             max_coord,
                                                             online_features,
@@ -80,9 +78,9 @@ def classify_train(all_inkml, max_coord):
     rf = classifiers.random_forest_train(feature_matrix,
                                          truth_labels)
     end = time.time()
-    print("Time taken to train Random Forest:", (end - start)/60, "min")
+    print("Time taken to train Random Forest:", round((end - start)/60), "min")
 
-    joblib.dump(trained_weights.TrainedWeights(rf), open('all_classify_weights.p', 'wb'), compress=True)
+    joblib.dump(trained_weights.TrainedWeights(rf), open('final_classify_weights.p', 'wb'), compress=True)
     print('Training complete. Model file saved to disk.')
 
     # view symbols
@@ -96,7 +94,7 @@ if __name__ == '__main__':
     if len(ar) == 3:
         main(ar[1],int(ar[2])) # TrainINKML/extension
     else:
-        print('Incorrect arguments. \nUsage: segment.py <path to inkml files> <1: segment, 2:classify>')
+        print('Incorrect arguments. \nUsage: segment_train.py <path to inkml files>')
         ar = input('Enter args: ').split()
-        main(ar[0], int(ar[1]))
+        main(ar[0])
         winsound.Beep(300, 2000)

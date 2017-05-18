@@ -13,7 +13,7 @@ import classify_feature_extractor as cfe
 import classifiers
 from sklearn.externals import joblib
 import sys
-import winsound
+
 
 def main(ar):
 
@@ -32,7 +32,8 @@ def main(ar):
     print('Scaling expression coordinates')
     pr_utils.scale_all_inkml(all_inkml, max_coord)
 
-    # preprocessing all Inkml object stroks
+    # preprocessing all Inkml object strokes
+    print('Start pre-processing..')
     pr_utils.preprocessing(all_inkml)
 
     # segment into objects
@@ -47,7 +48,7 @@ def main(ar):
 
     # classify each segmented object
     print('Start feature extraction for classifier..')
-    online_features = [cfe.OnlineFeature,cfe.polarFeature,cfe.endPointToCenter]
+    online_features = [cfe.OnlineFeature, cfe.polarFeature, cfe.endPointToCenter]
     offline_functions = [cfe.zoning, cfe.XaxisProjection, cfe.YaxisProjection, cfe.DiagonalProjections]
     feature_matrix, truth_labels = cfe.get_training_matrix(all_inkml,
                                                             max_coord,
@@ -56,7 +57,7 @@ def main(ar):
     predicted_labels = classifiers.random_forest_test(classify_weights.RF, feature_matrix)
     assign_classification_labels(all_inkml, predicted_labels)
 
-    print_to_file(all_inkml, 'E:/PaternRec/Project2/test_out_preprocess')
+    print_to_file(all_inkml, 'test_out')
 
 
 def assign_segmentation_labels(all_inkml, predicted_labels, strokes_to_consider):
@@ -150,4 +151,3 @@ if __name__ == '__main__':
               '<segmentation model file> <classification model file>')
         ar = input('Enter args: ').split(' ')
         main(ar)
-        winsound.beep(300,200)
