@@ -20,9 +20,9 @@ class SymbolObject:
 
     def set_details(self, object_id='x', label='x', weight=1.0):
         self.object_id = object_id
-        self.label = label
         if label == ',':
             label = 'COMMA'
+        self.label = label
         self.weight = str(weight)
 
 
