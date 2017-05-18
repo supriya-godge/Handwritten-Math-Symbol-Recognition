@@ -17,7 +17,7 @@ import winsound
 
 def main(ar):
 
-    max_coord = 200
+    max_coord = 50
 
     # load the trained models
     print('Reading models into memory')
@@ -36,10 +36,11 @@ def main(ar):
     pr_utils.preprocessing(all_inkml)
     # segment into objects
     print('Start feature extraction for segmentation..')
-    feature_matrix, truth_labels = seg_fe.feature_extractor(all_inkml)
+    #feature_matrix, truth_labels = seg_fe.feature_extractor(all_inkml)
+    seg_fe.baseLine_trial(all_inkml)
 
-    predicted_labels = classifiers.random_forest_test(segment_weights.RF, feature_matrix)
-    assign_segmentation_labels(all_inkml, predicted_labels)
+    #predicted_labels = classifiers.random_forest_test(segment_weights.RF, feature_matrix)
+    #assign_segmentation_labels(all_inkml, predicted_labels)
 
     # scale each segmented object
     print('Scaling symbol coordinates')
@@ -47,7 +48,7 @@ def main(ar):
 
     # classify each segmented object
     print('Start feature extraction for classifier..')
-    online_features = [cfe.OnlineFeature,cfe.polarFeature,cfe.endPointToCenter]
+    online_features = [cfe.OnlineFeature,cfe.polarFeature,cfe.endPointToCenter]#,cfe.polarFeature]
     offline_functions = [cfe.zoning, cfe.XaxisProjection, cfe.YaxisProjection, cfe.DiagonalProjections]
     feature_matrix, truth_labels = cfe.get_training_matrix(all_inkml,
                                                             max_coord,
@@ -56,7 +57,7 @@ def main(ar):
     predicted_labels = classifiers.random_forest_test(classify_weights.RF, feature_matrix)
     assign_classification_labels(all_inkml, predicted_labels)
 
-    print_to_file(all_inkml, 'E:/PaternRec/Project2/test_out_preprocess')
+    print_to_file(all_inkml, 'E:/PaternRec/Project2/test_out')
 
 
 def assign_segmentation_labels(all_inkml, predicted_labels):

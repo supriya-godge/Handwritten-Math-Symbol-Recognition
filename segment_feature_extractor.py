@@ -3,7 +3,7 @@ from pattern_rec_utils import *
 import math
 import numpy as np
 
-def rough_trial(all_inkml):
+def baseLine_trial(all_inkml):
     """
     Temporary.
     Segments each stroke as a new symbol
@@ -32,8 +32,7 @@ def feature_extractor(all_inkml):
                     feature_distance_average_center,\
                     feature_maximal_point_pair_distance,\
                     feature_horizntal_offset_strok1EndPoint_stroke2StartPoint,\
-                    feature_vertical_distance_between_boundingcenter,\
-                    feature_writing_slop]
+                    feature_vertical_distance_between_boundingcenter]
 
     feature_method=[feature_writing_slop,\
                     feature_parallelity_of_stroks]
