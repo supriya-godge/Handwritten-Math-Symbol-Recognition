@@ -12,15 +12,15 @@ class SymbolRelation:
     Class to contain information about each symbol Relationship
     """
 
-    def __init__(self, object_id1, object_id2, label):
-        self.object_id1 = object_id1
-        self.object_id2 = object_id2
+    def __init__(self, object1, object2, label):
+        self.object1 = object1
+        self.object2 = object2
         self.label = label
         self.weight = '1.0'
 
-    def set_relation(self, object_id1='x', object_id2='x', label='Right'):
-        self.object_id1 = object_id1
-        self.object_id2 = object_id2
+    def set_relation(self, object1, object, label='Right'):
+        self.object = object
+        self.object = object
         self.label = label
 
 
