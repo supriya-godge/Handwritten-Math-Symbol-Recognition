@@ -5,7 +5,6 @@ Utility modules for various Pattern Recognition functions
 @author: Supriya Godge (spg5835@rit.edu)
 """
 import numpy as np
-import sys
 
 
 def scale_all_inkml(all_inkml, max_coord):
@@ -279,3 +278,21 @@ def print_to_file(all_inkml, path):
             new_file.write(out)
 
     print('Files written to disk')
+
+
+def move_coords_to_objects(all_inkml, pfe):
+    """
+    Method to move all the stroke coordinates from
+    Inkml class to SymbolObject class. Also sets the
+    bounding info
+    """
+    for inkml in all_inkml:
+        for obj in inkml.objects:
+            for trace_id in obj.trace_ids:
+                coords = inkml.strokes[trace_id]
+                obj.strokes[trace_id] = coords
+
+            boundingBox = pfe.bounding_box(obj.strokes)
+            boundingCenter = pfe.bounding_box_center(obj.boundingBox)
+            obj.set_bounding_info(boundingBox, boundingCenter)
+        inkml.strokes = None

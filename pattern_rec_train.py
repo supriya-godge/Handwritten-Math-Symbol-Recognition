@@ -10,6 +10,7 @@ import pattern_rec_read_files as pr_files
 import pattern_rec_utils as pr_utils
 import segment_feature_extractor as seg_fe
 import classify_feature_extractor as cfe
+import parsing_feature_extractor as pfe
 import classifiers
 from sklearn.externals import joblib
 import sys
@@ -31,8 +32,15 @@ def main(ar):
 
     if not mode or mode == 1:   # not 0 = True
         segment_train(all_inkml, max_coord)
+
+    print('Scaling symbol coordinates')
+    pr_utils.scale_all_segments(all_inkml, max_coord)
+
     if not mode or mode == 2:
         classify_train(all_inkml, max_coord)
+
+    pr_utils.move_coords_to_objects(all_inkml, pfe)
+
     if not mode or mode == 3:
         parse_train(all_inkml, max_coord)
 
@@ -69,10 +77,6 @@ def segment_train(all_inkml, max_coord):
 
 
 def classify_train(all_inkml, max_coord):
-    # scale each segmented object
-    print('Scaling symbol coordinates')
-    pr_utils.scale_all_segments(all_inkml, max_coord)
-
     # get feature matrix for classifier training
     print('Start feature extraction for classifier..')
 

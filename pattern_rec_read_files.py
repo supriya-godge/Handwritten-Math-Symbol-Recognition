@@ -120,10 +120,10 @@ def add_ground_truth(inkml, soup, path_lg):
 
     for line in rel_lines:
         line = line.split(',')
-        obj1 = line[1].strip()
-        obj2 = line[2].strip()
+        obj1 = [obj for obj in inkml.objects if obj.object_id == line[1].strip()]
+        obj2 = [obj for obj in inkml.objects if obj.object_id == line[2].strip()]
         rel_label = line[3].strip()
-        inkml.create_relation(obj1, obj2, rel_label)
+        inkml.create_relation(obj1[0], obj2[0], rel_label)
 
     return inkml
 
@@ -173,4 +173,3 @@ def get_all_file_paths(root_path):
             all_file_paths.append(root + '/' + file)
 
     return all_file_paths
-

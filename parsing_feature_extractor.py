@@ -1,16 +1,6 @@
 import math
 import numpy as np
 
-# This class is created to store the information about the symbol
-class symbols:
-    __slots__ = "stokes","name","boudingBox","boundingCenter"
-
-    def __init__(self,strokes,name):
-        self.stokes = strokes
-        self.name =name
-        self.boudingBox = bounding_box(self.stokes)
-        self.boundingCenter = bounding_box_center(self.boudingBox)
-
 
 def bounding_box(strokes):
     new_list = convert_list(strokes)
