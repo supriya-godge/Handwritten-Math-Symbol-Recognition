@@ -23,21 +23,14 @@ def convert_list(strokes):
 #To create the feature matrix
 def feature_extractor(all_inkml, training=False):
     for inkml in all_inkml:
-        all_symbols=[]
-        for obj in inkml.objects:
-            trace=[]
-            for trace_id in obj.trace_ids:
-                trace.append(inkml.strokes[trace_id])
-            all_symbols.append(symbols(trace,obj.label))
-
         index=0
         #It will find the n nearest symbols and create a feature vector for
         # a current symbol to all its nearest symbols.
         if training:
             train_parser(inkml)
             continue
-        for obj in all_symbols:
-            clostest_symbol = find_nearest(obj,all_symbols[index+1:],2)
+        for obj in inkml.objects:
+            clostest_symbol = find_nearest(obj,inkml.objects[index+1:],2)
             for close_symb in clostest_symbol:
                 create_feature(obj,close_symb)
             index+=1
