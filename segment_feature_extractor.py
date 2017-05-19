@@ -4,7 +4,7 @@ import math
 import numpy as np
 import collections
 
-def rough_trial(all_inkml):
+def baseLine_trial(all_inkml):
     """
     Temporary.
     Segments each stroke as a new symbol
@@ -88,6 +88,7 @@ def feature_extractor(all_inkml, training=False):
     :param training: boolean flag
     :return:
     """
+
 
     feature_matrix = []
     truth_labels = []   # used by training

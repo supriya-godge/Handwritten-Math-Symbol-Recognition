@@ -2,12 +2,13 @@
 import os
 import shutil
 
-'''
+
 path="E:/PaternRec/Project2/GT_LG_Paridhi/"
-for fileName in os.listdir("E:/PaternRec/Project2/test_out"):
+for fileName in os.listdir("E:/PaternRec/Project2/Paridhi_testing"):
         try:
-             w= open(path + fileName)
-             shutil.copy2(path + fileName, "E:/PaternRec/Project2/GT_testing")
+             fileName=fileName.replace(".inkml","")
+             #w= open(path + fileName+)
+             shutil.copy2(path + fileName+".lg", "E:/PaternRec/Project2/Paridhi_testing_ls")
         except:
                 print("File not found",fileName)
 '''
@@ -18,4 +19,14 @@ with open(fileName) as fD:
         line = line.strip()
         shutil.copy2(line, "testing_inkml")
 
+fileName = "testingfiles.csv"
+
+with open(fileName) as fD:
+    for line in fD:
+        line = line.strip("\n")
+        line = line.split("/")
+        line = line[-1]
+        line = "E:/PaternRec/Project2/allInkmlFile/"+line
+        shutil.copy2(line, "E:/PaternRec/Project2/Paridhi_testing")
+'''
 
