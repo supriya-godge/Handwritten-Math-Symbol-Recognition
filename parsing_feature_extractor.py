@@ -54,7 +54,7 @@ def feature_extractor(all_inkml, training=False):
 
 def train_parser(inkml):
     for relation in inkml.relations:
-        symbol1 =
+        pass
 
 def create_feature(symbol1,symbol2):
     pass
