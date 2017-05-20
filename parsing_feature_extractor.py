@@ -71,7 +71,7 @@ def feature_extractor(all_inkml, training=False):
         # a current symbol to all its nearest symbols.
         if training:
             for relation in inkml.relations:
-                feature_matrix.append(create_feature(relation.object1, relation.object2))
+                feature_matrix.append(create_feature(relation.object1, relation.object2,inkml.objects))
                 GT.append(relation.label)
             continue
         for obj in inkml.objects:
@@ -86,7 +86,7 @@ def feature_extractor(all_inkml, training=False):
 
 
 
-def create_feature(symbol1,symbol2):
+def create_feature(symbol1,symbol2,all_symb):
     feature_functions = [feature_vertical_distance_between_boundingcenter,
                 feature_writing_slop]
 
@@ -97,7 +97,10 @@ def create_feature(symbol1,symbol2):
     for func in feature_functions:
         feature_vector.append(func(symbol1,symbol2))
 
-    feature_vector.append(feature_PSC(symbol1, symbol2))
+    other_symb = all_symb[:]
+    other_symb.remove(symbol1)
+    other_symb.remove(symbol2)
+    feature_vector.append(feature_PSC(symbol1, symbol2,other_symb))
 
     return feature_vector
 
@@ -143,7 +146,9 @@ def feature_writing_slop(sym1,sym2):
 
 def feature_PSC(symb1,symb2,all_other_symb):
     feature_vector=[]
-    boundingBox = bounding_box(symb1+symb2)
+    sym1_strokes = list(symb1.strokes.values())
+    sym2_strokes = list(symb2.strokes.values())
+    boundingBox = bounding_box(sym1_strokes+sym2_strokes)
     center = bounding_box_center(boundingBox)
     radius = boundingBox[0] if boundingBox[0]>boundingBox[1] else boundingBox[1]
     bounding_circle = (center,radius)
