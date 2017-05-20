@@ -120,12 +120,9 @@ def add_ground_truth(inkml, soup, path_lg):
 
     for line in rel_lines:
         line = line.split(',')
-        print(inkml.objects)
         obj1 = [obj for obj in inkml.objects if obj.object_id == line[1].strip()]
         obj2 = [obj for obj in inkml.objects if obj.object_id == line[2].strip()]
-        print("Object 1 is ",line)
         rel_label = line[3].strip()
-        print(obj1," ",obj2)
         inkml.create_relation(obj1[0], obj2[0], rel_label)
 
     return inkml

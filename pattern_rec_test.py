@@ -75,8 +75,8 @@ def parser_ver2(ar, max_coord):
 
     # segment into objects
     print('Start feature extraction for segmentation..')
-    #feature_matrix, truth_labels = seg_fe.feature_extractor(all_inkml)
-    seg_fe.baseLine_trial(all_inkml)
+    feature_matrix, truth_labels = seg_fe.feature_extractor(all_inkml)
+    #seg_fe.baseLine_trial(all_inkml)
 
     #predicted_labels = classifiers.random_forest_test(segment_weights.RF, feature_matrix)
     #assign_segmentation_labels(all_inkml, predicted_labels)
