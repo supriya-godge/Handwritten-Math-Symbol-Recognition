@@ -100,6 +100,9 @@ def create_feature(symbol1,symbol2,all_symb):
     other_symb = all_symb[:]
     other_symb.remove(symbol1)
     other_symb.remove(symbol2)
+    other_symb = [symb.strokes for symb in other_symb]
+    other_symb = convert_list(other_symb)
+
     feature_vector.append(feature_PSC(symbol1, symbol2,other_symb))
 
     return feature_vector
@@ -140,21 +143,19 @@ def feature_distance_between_bounding_center(symb1,symb2):
 
 
 def feature_writing_slop(sym1,sym2):
-    s1=sym1.strokes[sym1.trace_ids[-1]][-1]
-    s2=sym2.strokes[sym2.trace_ids[0]][0]
+    s1=sym1.strokes[-1][-1]
+    s2=sym2.strokes[0][0]
     return [math.atan2(s2[1]-s1[1],s2[0]-s1[0])]
 
 def feature_PSC(symb1,symb2,all_other_symb):
     feature_vector=[]
-    sym1_strokes = list(symb1.strokes.values())
-    sym2_strokes = list(symb2.strokes.values())
-    boundingBox = bounding_box(sym1_strokes+sym2_strokes)
+    boundingBox = bounding_box(symb1.strokes+symb2.strokes)
     center = bounding_box_center(boundingBox)
     radius = boundingBox[0] if boundingBox[0]>boundingBox[1] else boundingBox[1]
     bounding_circle = (center,radius)
-    feature_vector += calculate_strok(bounding_circle,symb1)[1]
-    feature_vector += calculate_strok(bounding_circle,symb2)[1]
-    feature_vector += calculate_strok(bounding_circle,all_other_symb)[1]
+    feature_vector += calculate_strok(bounding_circle, symb1.strokes)[1]
+    feature_vector += calculate_strok(bounding_circle, symb2.strokes)[1]
+    feature_vector += calculate_strok(bounding_circle, all_other_symb)[1]
     return feature_vector
 
 

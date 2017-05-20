@@ -18,7 +18,7 @@ class SymbolObject:
         self.label = None
         self.weight = None
         self.trace_ids = trace_ids  # should be a list
-        self.strokes = collections.OrderedDict()
+        self.strokes = []
         self.boundingBox = None
         self.boundingCenter = None
 
