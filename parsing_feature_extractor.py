@@ -88,13 +88,16 @@ def feature_extractor(all_inkml, training=False):
 
 def create_feature(symbol1,symbol2):
     feature_functions = [feature_vertical_distance_between_boundingcenter,
-                feature_writing_slop,
-                feature_PSC]
+                feature_writing_slop]
+
+    # TODO: feature_PSC
 
     feature_vector=[]
 
     for func in feature_functions:
         feature_vector.append(func(symbol1,symbol2))
+
+    feature_vector.append(feature_PSC(symbol1, symbol2))
 
     return feature_vector
 
@@ -135,7 +138,7 @@ def feature_distance_between_bounding_center(symb1,symb2):
 
 def feature_writing_slop(sym1,sym2):
     s1=sym1.strokes[sym1.trace_ids[-1]][-1]
-    s2=sym2.strokes[0][0]
+    s2=sym2.strokes[sym2.trace_ids[0]][0]
     return [math.atan2(s2[1]-s1[1],s2[0]-s1[0])]
 
 def feature_PSC(symb1,symb2,all_other_symb):

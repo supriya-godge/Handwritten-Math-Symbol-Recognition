@@ -23,9 +23,9 @@ class SymbolObject:
         self.boundingCenter = None
 
     def set_details(self, object_id='x', label='x', weight=1.0):
+        object_id = object_id.replace(',', 'COMMA')
         self.object_id = object_id
-        if label == ',':
-            label = 'COMMA'
+        label = label.replace(',', 'COMMA')
         self.label = label
         self.weight = str(weight)
 

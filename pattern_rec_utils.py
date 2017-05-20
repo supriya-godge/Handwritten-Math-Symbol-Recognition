@@ -292,7 +292,7 @@ def move_coords_to_objects(all_inkml, pfe):
                 coords = inkml.strokes[trace_id]
                 obj.strokes[trace_id] = coords
 
-            boundingBox = pfe.bounding_box(obj.strokes)
-            boundingCenter = pfe.bounding_box_center(obj.boundingBox)
+            boundingBox = pfe.bounding_box(list(obj.strokes.values()))
+            boundingCenter = pfe.bounding_box_center(boundingBox)
             obj.set_bounding_info(boundingBox, boundingCenter)
         inkml.strokes = None
