@@ -86,7 +86,6 @@ def read_file(file_path, training, path_lg):
         inkml.add_stroke(trace.get('id'), coords)
 
     if training:
-        path_lg += '/' + inkml.ui + '.lg'
         inkml = add_ground_truth(inkml, soup, path_lg)
 
     return inkml
@@ -114,16 +113,18 @@ def add_ground_truth(inkml, soup, path_lg):
     # sort the newly created objects by trace_ids
     inkml.sort_objects()
 
-    # set relation ground truth from lg files
-    with open(path_lg, 'r') as lg_file:
-        rel_lines = [line for line in lg_file.readlines() if line[0] == 'R' or line[0] == 'E']
+    if path_lg is not None:
+        path_lg += '/' + inkml.ui + '.lg'
+        # set relation ground truth from lg files
+        with open(path_lg, 'r') as lg_file:
+            rel_lines = [line for line in lg_file.readlines() if line[0] == 'R' or line[0] == 'E']
 
-    for line in rel_lines:
-        line = line.split(',')
-        obj1 = [obj for obj in inkml.objects if obj.object_id == line[1].strip()]
-        obj2 = [obj for obj in inkml.objects if obj.object_id == line[2].strip()]
-        rel_label = line[3].strip()
-        inkml.create_relation(obj1[0], obj2[0], rel_label)
+        for line in rel_lines:
+            line = line.split(',')
+            obj1 = [obj for obj in inkml.objects if obj.object_id == line[1].strip()]
+            obj2 = [obj for obj in inkml.objects if obj.object_id == line[2].strip()]
+            rel_label = line[3].strip()
+            inkml.create_relation(obj1[0], obj2[0], rel_label)
 
     return inkml
 
