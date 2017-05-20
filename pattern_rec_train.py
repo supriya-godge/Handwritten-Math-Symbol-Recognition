@@ -21,7 +21,6 @@ import time
 
 def main(ar):
     max_coord = 100
-
     path = ar[0]
     path_lg = ar[1]
     mode = int(ar[2])
@@ -33,20 +32,34 @@ def main(ar):
     if not mode or mode == 1:   # not 0 = True
         segment_train(all_inkml, max_coord)
 
-    print('Scaling symbol coordinates')
-    pr_utils.scale_all_segments(all_inkml, max_coord)
-
     if not mode or mode == 2:
         classify_train(all_inkml, max_coord)
-
-    pr_utils.move_coords_to_objects(all_inkml, pfe)
+        print('Scaling symbol coordinates')
+        pr_utils.scale_all_segments(all_inkml, max_coord)
 
     if not mode or mode == 3:
+        pr_utils.move_coords_to_objects(all_inkml, pfe)
+        pr_utils.scale_all_segments(all_inkml, max_coord)
         parse_train(all_inkml, max_coord)
 
 
 def parse_train(all_inkml, max_coord):
-    pass
+    print('Start feature extraction for parsing..')
+    start = time.time()
+    feature_matrix, truth_labels = pfe.feature_extractor(all_inkml,True)
+    end = time.time()
+    print("Time taken to extract the features for parsing:", round((end - start)/60), "min")
+
+    np.savetxt('parsing_feature_matrix.csv', feature_matrix, delimiter=',')
+
+    start=time.time()
+    rf = classifiers.random_forest_train(feature_matrix,
+                                         truth_labels)
+    end = time.time()
+    print("Time taken to train Random Forest:", round((end - start)/60, 2), "min")
+
+    joblib.dump(trained_weights.TrainedWeights(rf), open('final_parsing_weights.p', 'wb'), compress=True)
+    print('Training complete. Model file saved to disk.')
 
 
 def segment_train(all_inkml, max_coord):
@@ -111,7 +124,7 @@ if __name__ == '__main__':
     if len(ar) == 4:
         main(ar[1:])
     else:
-        print('Incorrect arguments. \nUsage: segment_train.py <path to inkml files> <path to lg files>'
+        print('Incorrect arguments. \nUsage: pattern_rec_train.py <path to inkml files> <path to lg files>'
               ' <0:all 1:segment 2:classify 3:parse>')
         ar = input('Enter args: ').split()
         main(ar)

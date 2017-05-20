@@ -2,6 +2,40 @@ import math
 import numpy as np
 
 
+"""
+def scale_strokes(strokes ,max_coord):
+
+    bb = bounding_box(strokes)
+    new_strokes = normalizedImage(bb[0],bb[1],bb[2],bb[3],strokes)
+    return new_strokes
+
+
+def normalizedImage(self,widthMin,widthMax,heightMin,heightMax,strockInfo):
+    normalized = []
+    if (widthMax - widthMin) > (heightMax - heightMin):
+        div = widthMax - widthMin
+    else:
+        div = heightMax - heightMin
+    for strock in strockInfo:
+        first = True
+        strockList = []
+        for item1 in strock:
+            if widthMax - widthMin != 0:
+                item1[0] = (item1[0] - widthMin) * (self.resize / div)
+            else:
+                item1[0] = (item1[0] - widthMin) * (self.resize / 0.0001)
+            if heightMax - heightMin != 0:
+                item1[1] = (item1[1] - heightMin) * (self.resize / div)
+            else:
+                item1[1] = (item1[1] - heightMin) * (self.resize / 0.0001)
+            if first:
+                first = False
+
+            strockList.append([item1[0], item1[1]])
+        normalized.append(strockList)
+    return normalized
+"""
+
 def bounding_box(strokes):
     new_list = convert_list(strokes)
     minX = np.min(new_list[:, 0])
@@ -22,26 +56,41 @@ def convert_list(strokes):
 
 #To create the feature matrix
 def feature_extractor(all_inkml, training=False):
+    feature_matrix=[]
+    GT=[]
     for inkml in all_inkml:
         index=0
         #It will find the n nearest symbols and create a feature vector for
         # a current symbol to all its nearest symbols.
         if training:
-            train_parser(inkml)
+            for relation in inkml.relations:
+                feature_matrix.append(create_feature(relation.object1, relation.object2))
+                GT.append(relation.label)
             continue
         for obj in inkml.objects:
             clostest_symbol = find_nearest(obj,inkml.objects[index+1:],2)
             for close_symb in clostest_symbol:
                 create_feature(obj,close_symb)
             index+=1
+    return feature_matrix,GT
 
-def train_parser(inkml):
-    for relation in inkml.relations:
-        create_feature(relation.object1,relation.object2)
+
+
+
 
 
 def create_feature(symbol1,symbol2):
-    pass
+    feature_functions = [feature_vertical_distance_between_boundingcenter,
+                feature_writing_slop,
+                feature_PSC]
+
+    feature_vector=[]
+
+    for func in feature_functions:
+        feature_vector.append(func(symbol1,symbol2))
+
+    return feature_vector
+
 
 
 def find_nearest(item,all_symbols, total):
@@ -58,11 +107,14 @@ def distance(point1,point2):
     p2=np.asarray(point2)
     return np.sqrt(np.sum((p1-p2)**2))
 
+def manhatten_distance(sym1,sym2):
+    dist = sym1.boundingCenter[0]-sym2.boundingCenter[0]+sym1.boundingCenter[1]-sym2.boundingCenter[1]
+    return dist
 
 def find_distance(item, all_symbols):
     distances = []
     for current_point in all_symbols:
-        distances.append(distance(item.boundingCenter,current_point.boundingCenter))
+        distances.append(manhatten_distance(item,current_point))
     return distances
 
 def feature_vertical_distance_between_boundingcenter(symb1,symb2):
@@ -74,9 +126,9 @@ def feature_distance_between_bounding_center(symb1,symb2):
     return list(distance(symb1.boundingCenter,symb2.boundingCenter))
 
 
-def feature_writing_slop(strok1,strok2):
-    s1=strok1[len(strok1)-1]
-    s2=strok2[0]
+def feature_writing_slop(sym1,sym2):
+    s1=sym1.strokes[sym1.trace_ids[-1]][-1]
+    s2=sym2.strokes[0][0]
     return [math.atan2(s2[1]-s1[1],s2[0]-s1[0])]
 
 def feature_PSC(symb1,symb2,all_other_symb):
