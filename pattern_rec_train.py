@@ -51,7 +51,7 @@ def parse_train(all_inkml, max_coord):
     end = time.time()
     print("Time taken to extract the features for parsing:", round((end - start) / 60), "min")
 
-    np.savetxt('parsing_feature_matrix.csv', feature_matrix, delimiter=',')
+    #np.savetxt('parsing_feature_matrix.csv', feature_matrix, delimiter=',')
 
     start = time.time()
     rf = classifiers.random_forest_train(feature_matrix,

@@ -63,27 +63,25 @@ def convert_list(strokes):
 
 #To create the feature matrix
 def feature_extractor(all_inkml, training=False):
-    feature_matrix=[]
-    GT=[]
+    feature_matrix = []
+    GT = []
     for inkml in all_inkml:
-        index=0
         #It will find the n nearest symbols and create a feature vector for
         # a current symbol to all its nearest symbols.
         if training:
             for relation in inkml.relations:
                 feature_matrix.append(create_feature(relation.object1, relation.object2,inkml.objects))
                 GT.append(relation.label)
-            continue
-        for obj in inkml.objects:
-            clostest_symbol = find_nearest(obj,inkml.objects[index+1:],2)
-            for close_symb in clostest_symbol:
-                create_feature(obj,close_symb)
-            index+=1
-    return feature_matrix,GT
 
+        else:
+            index=0
+            for obj in inkml.objects:
+                clostest_symbol = find_nearest(obj,inkml.objects[index+1:],2)
+                for close_symb in clostest_symbol:
+                    create_feature(obj,close_symb)
+                index+=1
 
-
-
+    return np.asarray(feature_matrix), np.asarray(GT)
 
 
 def create_feature(symbol1,symbol2,all_symb):
@@ -95,7 +93,7 @@ def create_feature(symbol1,symbol2,all_symb):
     feature_vector=[]
 
     for func in feature_functions:
-        feature_vector.append(func(symbol1,symbol2))
+        feature_vector += (func(symbol1,symbol2))
 
     other_symb = all_symb[:]
     other_symb.remove(symbol1)
@@ -105,7 +103,7 @@ def create_feature(symbol1,symbol2,all_symb):
         other_symb = [symb.strokes for symb in other_symb][0]
     else:
         other_symb = [[]]
-    feature_vector.append(feature_PSC(symbol1, symbol2,other_symb))
+    feature_vector += (feature_PSC(symbol1, symbol2,other_symb))
 
     return feature_vector
 
