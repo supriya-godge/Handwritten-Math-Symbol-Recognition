@@ -35,7 +35,7 @@ def feature_extractor(all_inkml, training=False):
     if training:
         for inkml in all_inkml:
             for relation in inkml.relations:
-                feature_matrix.append(create_feature(relation.object1, relation.object2,inkml.objects))
+                feature_matrix.append(create_feature(relation.object1, relation.object2, inkml.objects))
                 GT.append(relation.label)
 
         return np.asarray(feature_matrix), np.asarray(GT)
@@ -43,9 +43,9 @@ def feature_extractor(all_inkml, training=False):
     else:
         for inkml in all_inkml:
             for index, obj in enumerate(inkml.objects):
-                if inkml.objects[index+1]:
+                if len(inkml.objects) > index+1:
                     next_obj = inkml.objects[index+1]
-                    feature_matrix.append(create_feature(obj, next_obj))
+                    feature_matrix.append(create_feature(obj, next_obj, inkml.objects))
 
                 # It will find the n nearest symbols and create a feature vector for
                 # a current symbol to all its nearest symbols.

@@ -267,10 +267,10 @@ def assign_parsing_labels(all_inkml, predicted_labels):
 
     for inkml in all_inkml:
         for index, obj in enumerate(inkml.objects):
-            if inkml.objects[index + 1]:
+            if len(inkml.objects) > index+1:
                 next_obj = inkml.objects[index+1]
                 label_relation = predicted_labels[label_idx]
-                obj.set_details(obj, next_obj, label_relation)
+                inkml.create_relation(obj, next_obj, label_relation)
                 label_idx += 1
 
 

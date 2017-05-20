@@ -33,8 +33,8 @@ class Inkml:
         self.objects.append(obj)
         return obj
 
-    def create_relation(self, object_id1=None, object_id2=None, label=None):
-        rel = SymbolRelation(object_id1, object_id2, label)
+    def create_relation(self, object1=None, object2=None, label=None):
+        rel = SymbolRelation(object1, object2, label)
         self.relations.append(rel)
         return rel
 
