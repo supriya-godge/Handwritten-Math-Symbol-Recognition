@@ -114,10 +114,10 @@ def parser_ver2(ar, max_coord):
 
 if __name__ == '__main__':
     ar = sys.argv
-    if len(ar) == 6:
+    if len(ar) == 7:
         main(ar[1:])
     else:
-        print('Incorrect arguments. \nUsage: segment_test.py <path to inkml files> '
-              '<segmentation model file> <classification model file> <parser model file> <parser version>')
+        print('Incorrect arguments. \nUsage: segment_test.py <path to inkml files> <path to lg files> <parser version>'
+              '<parser model file> <segmentation model file> <classification model file>')
         ar = input('Enter args: ').split(' ')
         main(ar)
