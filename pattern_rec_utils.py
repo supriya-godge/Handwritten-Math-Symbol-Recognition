@@ -262,6 +262,18 @@ def assign_classification_labels(all_inkml, predicted_labels):
             label_idx += 1
 
 
+def assign_parsing_labels(all_inkml, predicted_labels):
+    label_idx = 0
+
+    for inkml in all_inkml:
+        for index, obj in enumerate(inkml.objects):
+            if inkml.objects[index + 1]:
+                next_obj = inkml.objects[index+1]
+                label_relation = predicted_labels[label_idx]
+                obj.set_details(obj, next_obj, label_relation)
+                label_idx += 1
+
+
 def print_to_file(all_inkml, path):
     """
     Write a new .lg file in the Object format for each inkml file.
@@ -274,7 +286,8 @@ def print_to_file(all_inkml, path):
     for inkml in all_inkml:
         file_name = path + '/' + inkml.ui + '.lg'
         with open(file_name, 'w') as new_file:
-            out = inkml.get_objects_str()
+            out = inkml.get_objects_str() + '\n'
+            out += inkml.get_relations_str()
             new_file.write(out)
 
     print('Files written to disk')

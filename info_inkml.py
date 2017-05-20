@@ -46,6 +46,13 @@ class Inkml:
 
         return result
 
+    def get_relations_str(self):
+        result = ''
+        for rel in self.relations:
+            result += 'EO, {}, {}, {}, {}\n'.format(rel.object1.object_id, rel.object2.object_id, rel.label, rel.weight)
+
+        return result
+
     def sort_objects(self):
         # sort objects by trace_ids
         self.objects.sort(key=lambda x: float(min(x.trace_ids, key=float)))

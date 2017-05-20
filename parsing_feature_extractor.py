@@ -54,34 +54,39 @@ def bounding_box(strokes):
 def bounding_box_center(boundBox):
     return [math.fabs(boundBox[0]-boundBox[1])/2, math.fabs(boundBox[2]-boundBox[3])/2]
 
-    # To convert the list from 3D to 2D
+# To convert the list from 3D to 2D
 def convert_list(strokes):
     new_list=[]
     for alist in strokes:
         new_list+=alist
     return np.asarray(new_list)
 
-#To create the feature matrix
+
 def feature_extractor(all_inkml, training=False):
     feature_matrix = []
     GT = []
-    for inkml in all_inkml:
-        #It will find the n nearest symbols and create a feature vector for
-        # a current symbol to all its nearest symbols.
-        if training:
+
+    if training:
+        for inkml in all_inkml:
             for relation in inkml.relations:
                 feature_matrix.append(create_feature(relation.object1, relation.object2,inkml.objects))
                 GT.append(relation.label)
 
-        else:
-            index=0
-            for obj in inkml.objects:
-                clostest_symbol = find_nearest(obj,inkml.objects[index+1:],2)
-                for close_symb in clostest_symbol:
-                    create_feature(obj,close_symb)
-                index+=1
+        return np.asarray(feature_matrix), np.asarray(GT)
 
-    return np.asarray(feature_matrix), np.asarray(GT)
+    else:
+        for inkml in all_inkml:
+            for index, obj in enumerate(inkml.objects):
+                if inkml.objects[index+1]:
+                    next_obj = inkml.objects[index+1]
+                    feature_matrix.append(create_feature(obj, next_obj))
+
+                # It will find the n nearest symbols and create a feature vector for
+                # a current symbol to all its nearest symbols.
+                #closest_symbols = find_nearest(obj, inkml.objects[index + 1:], 2)
+                #for close_symb in closest_symbols:
+                #    create_feature(obj,close_symb)
+        return np.asarray(feature_matrix)
 
 
 def create_feature(symbol1,symbol2,all_symb):
