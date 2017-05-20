@@ -21,7 +21,6 @@ import time
 
 def main(ar):
     max_coord = 100
-
     path = ar[0]
     path_lg = ar[1]
     mode = int(ar[2])
@@ -46,11 +45,13 @@ def main(ar):
 
 
 def parse_train(all_inkml, max_coord):
-    print('Start feature extraction for segmentation..')
+    print('Start feature extraction for parsing..')
     start = time.time()
     feature_matrix, truth_labels = pfe.feature_extractor(all_inkml, training=True)
     end = time.time()
     print("Time taken to extract the features for parsing:", round((end - start) / 60), "min")
+
+    #np.savetxt('parsing_feature_matrix.csv', feature_matrix, delimiter=',')
 
     start = time.time()
     rf = classifiers.random_forest_train(feature_matrix,
@@ -125,7 +126,7 @@ if __name__ == '__main__':
     if len(ar) == 4:
         main(ar[1:])
     else:
-        print('Incorrect arguments. \nUsage: segment_train.py <path to inkml files> <path to lg files>'
+        print('Incorrect arguments. \nUsage: pattern_rec_train.py <path to inkml files> <path to lg files>'
               ' <0:all 1:segment 2:classify 3:parse>')
         ar = input('Enter args: ').split()
         main(ar)
