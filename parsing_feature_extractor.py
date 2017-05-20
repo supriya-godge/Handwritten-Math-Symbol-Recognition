@@ -9,40 +9,6 @@ import math
 import numpy as np
 
 
-"""
-def scale_strokes(strokes ,max_coord):
-
-    bb = bounding_box(strokes)
-    new_strokes = normalizedImage(bb[0],bb[1],bb[2],bb[3],strokes)
-    return new_strokes
-
-
-def normalizedImage(self,widthMin,widthMax,heightMin,heightMax,strockInfo):
-    normalized = []
-    if (widthMax - widthMin) > (heightMax - heightMin):
-        div = widthMax - widthMin
-    else:
-        div = heightMax - heightMin
-    for strock in strockInfo:
-        first = True
-        strockList = []
-        for item1 in strock:
-            if widthMax - widthMin != 0:
-                item1[0] = (item1[0] - widthMin) * (self.resize / div)
-            else:
-                item1[0] = (item1[0] - widthMin) * (self.resize / 0.0001)
-            if heightMax - heightMin != 0:
-                item1[1] = (item1[1] - heightMin) * (self.resize / div)
-            else:
-                item1[1] = (item1[1] - heightMin) * (self.resize / 0.0001)
-            if first:
-                first = False
-
-            strockList.append([item1[0], item1[1]])
-        normalized.append(strockList)
-    return normalized
-"""
-
 def bounding_box(strokes):
     new_list = convert_list(strokes)
     minX = np.min(new_list[:, 0])
@@ -91,7 +57,12 @@ def feature_extractor(all_inkml, training=False):
 
 def create_feature(symbol1,symbol2,all_symb):
     feature_functions = [feature_vertical_distance_between_boundingcenter,
-                feature_writing_slop]
+                         feature_horizontal_distance_between_boundingcenter,
+                         feature_corner_angle_with_center,
+                         feature_distance_between_bounding_center,
+                         feature_angle_bounding_center,
+                         feature_vertical_offset,
+                         feature_writing_slop]
 
     # TODO: feature_PSC
 
@@ -142,16 +113,61 @@ def find_distance(item, all_symbols):
 def feature_vertical_distance_between_boundingcenter(symb1,symb2):
     s1_center= symb1.boundingCenter
     s2_center= symb2.boundingCenter
+    return [s1_center[0]-s2_center[0]]
+
+def feature_vertical_offset(symb1, symb2):
+    s1 = symb1.boundingBox
+    s2 = symb2.boundingBox
+    return [s1[3] - s2[3],s1[3] - s2[2]]
+
+def feature_horizontal_distance_between_boundingcenter(symb1,symb2):
+    s1_center= symb1.boundingCenter
+    s2_center= symb2.boundingCenter
     return [s1_center[1]-s2_center[1]]
 
+def feature_corner_angle_with_center(symb1,symb2):
+    angle_list = []
+    angle_list.append(angle_between_two_points([symb1.boundingBox[0],symb1.boundingBox[2]],symb2.boundingCenter))
+    angle_list.append(angle_between_two_points([symb1.boundingBox[1], symb1.boundingBox[2]], symb2.boundingCenter))
+    angle_list.append(angle_between_two_points([symb1.boundingBox[0], symb1.boundingBox[3]], symb2.boundingCenter))
+    angle_list.append(angle_between_two_points([symb1.boundingBox[1], symb1.boundingBox[3]], symb2.boundingCenter))
+    return angle_list
+
+def angle_between_two_points(point1,point2):
+    co = np.dot(point1,point2)
+    sin = np.linalg.norm(np.cross(point1,point2))
+    angle = np.arctan2(co, sin)
+    angle = round_angle(angle,30)
+    return angle
+
+
+
 def feature_distance_between_bounding_center(symb1,symb2):
-    return list(distance(symb1.boundingCenter,symb2.boundingCenter))
+    return [distance(symb1.boundingCenter,symb2.boundingCenter)]
 
 
 def feature_writing_slop(sym1,sym2):
     s1=sym1.strokes[-1][-1]
     s2=sym2.strokes[0][0]
-    return [math.atan2(s2[1]-s1[1],s2[0]-s1[0])]
+    angle = math.atan2(s2[1]-s1[1],s2[0]-s1[0])
+    angle = round_angle(angle,30)
+    return [angle]
+
+def round_angle(angle,rnd):
+    angle = math.degrees(angle + 360) % 360
+    angle = round(angle * rnd) // rnd
+    return angle
+
+
+def feature_angle_bounding_center(symb1,symb2):
+    s1= symb1.boundingCenter
+    s2= symb2.boundingCenter
+    angle = math.atan2(s2[1] - s1[1], s2[0] - s1[0])
+    angle = round_angle(angle, 30)
+    return [angle]
+
+
+
 
 def feature_PSC(symb1,symb2,all_other_symb):
     feature_vector=[]
@@ -176,8 +192,7 @@ def calculate_strok(bounding_circle,symb):
     symb = convert_list(symb)
     for s1 in symb:
         angle=math.atan2(center[1] - s1[1], center[0] - s1[0])
-        angle = math.degrees(angle+360)%360
-        angle=round(angle*ang_round)//ang_round
+        angle = round_angle(angle,ang_round)
         dist = round(distance(center,s1)*rad_round)/rad_round
         if dist < radius:
             count+=1

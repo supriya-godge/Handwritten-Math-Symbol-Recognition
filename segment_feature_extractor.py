@@ -248,7 +248,8 @@ def feature_parallelity_of_stroks(strok1,strok2):
     v2 = np.array([strok2[0], strok2[len(strok2)-1]])
     co = np.dot(v1,v2)
     sin = np.linalg.norm(np.cross(v1,v2))
-    return list(np.arctan2(co,sin).flatten())
+    angle = np.arctan2(co, sin)
+    return [angle]
 
 
 def feature_distance_between_bounding_center(strok1,strok2):
