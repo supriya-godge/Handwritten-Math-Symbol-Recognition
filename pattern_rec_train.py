@@ -46,7 +46,20 @@ def main(ar):
 
 
 def parse_train(all_inkml, max_coord):
-    pass
+    print('Start feature extraction for segmentation..')
+    start = time.time()
+    feature_matrix, truth_labels = pfe.feature_extractor(all_inkml, training=True)
+    end = time.time()
+    print("Time taken to extract the features for parsing:", round((end - start) / 60), "min")
+
+    start = time.time()
+    rf = classifiers.random_forest_train(feature_matrix,
+                                         truth_labels)
+    end = time.time()
+    print("Time taken to train Random Forest:", round((end - start) / 60, 2), "min")
+
+    joblib.dump(trained_weights.TrainedWeights(rf), open('parse_weights.p', 'wb'), compress=True)
+    print('Training complete. Model file saved to disk.')
 
 
 def segment_train(all_inkml, max_coord):
@@ -54,8 +67,9 @@ def segment_train(all_inkml, max_coord):
     # scale coordinates in all Inkml objects
     print('Scaling expression coordinates')
     pr_utils.scale_all_inkml(all_inkml, max_coord)
-    print('Start pre-processing for segmentation..')
-    pr_utils.preprocessing(all_inkml)
+
+    #print('Start pre-processing for segmentation..')
+    #pr_utils.preprocessing(all_inkml)
 
     # segment into objects
     print('Start feature extraction for segmentation..')
@@ -64,7 +78,7 @@ def segment_train(all_inkml, max_coord):
     end = time.time()
     print("Time taken to extract the features for segmentation:", round((end - start)/60), "min")
 
-    np.savetxt('segment_feature_matrix.csv', feature_matrix, delimiter=',')
+    #np.savetxt('segment_feature_matrix.csv', feature_matrix, delimiter=',')
 
     start=time.time()
     rf = classifiers.random_forest_train(feature_matrix,
@@ -72,7 +86,7 @@ def segment_train(all_inkml, max_coord):
     end = time.time()
     print("Time taken to train Random Forest:", round((end - start)/60, 2), "min")
 
-    joblib.dump(trained_weights.TrainedWeights(rf), open('final_segment_weights.p', 'wb'), compress=True)
+    joblib.dump(trained_weights.TrainedWeights(rf), open('segment_weights.p', 'wb'), compress=True)
     print('Training complete. Model file saved to disk.')
 
 
@@ -97,7 +111,7 @@ def classify_train(all_inkml, max_coord):
     end = time.time()
     print("Time taken to train Random Forest:", round((end - start)/60), "min")
 
-    joblib.dump(trained_weights.TrainedWeights(rf), open('final_classify_weights.p', 'wb'), compress=True)
+    joblib.dump(trained_weights.TrainedWeights(rf), open('classify_weights.p', 'wb'), compress=True)
     print('Training complete. Model file saved to disk.')
 
     # view symbols

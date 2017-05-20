@@ -31,7 +31,23 @@ def parser_ver1(ar, max_coord):
     """
     Run the program with parser version 1
     """
+
+    # load the trained model
+    print('Reading model into memory')
     parser_weights = joblib.load(open(ar[3], "rb"))   # read trained parser model
+
+    # get a list of Inkml objects
+    print('Reading files into memory')
+    all_inkml = pr_files.get_all_inkml_files(ar[0], False)
+
+    # scale coordinates in all Inkml objects
+    print('Scaling expression coordinates')
+    pr_utils.scale_all_inkml(all_inkml, max_coord)
+
+    # scale each segmented object
+    print('Scaling symbol coordinates')
+    pr_utils.scale_all_segments(all_inkml, max_coord)
+
 
 
 def parser_ver2(ar, max_coord):
@@ -54,8 +70,8 @@ def parser_ver2(ar, max_coord):
     pr_utils.scale_all_inkml(all_inkml, max_coord)
 
     # preprocessing all Inkml object strokes
-    print('Start pre-processing..')
-    pr_utils.preprocessing(all_inkml)
+    #print('Start pre-processing..')
+    #pr_utils.preprocessing(all_inkml)
 
     # segment into objects
     print('Start feature extraction for segmentation..')
@@ -82,53 +98,9 @@ def parser_ver2(ar, max_coord):
                                                             offline_functions)
     predicted_labels = classifiers.random_forest_test(classify_weights.RF, feature_matrix)
 
-    assign_classification_labels(all_inkml, predicted_labels)
+    pr_utils.assign_classification_labels(all_inkml, predicted_labels)
 
-    print_to_file(all_inkml, 'E:/PaternRec/Project2/test_out')
-
-
-def assign_segmentation_labels(all_inkml, predicted_labels):
-
-    label_idx = 0
-    for inkml in all_inkml:
-        current_segment = []
-        for trace_id in inkml.strokes:
-            current_segment.append(trace_id)
-
-            is_last_stroke = trace_id == next(reversed(inkml.strokes))  # boolean flag set if trace_id is last stroke
-
-            if is_last_stroke or predicted_labels[label_idx] == False:
-                inkml.create_object(current_segment)
-                current_segment = []
-
-            label_idx += 1
-        label_idx -= 1  # decrement label index after each file because last stroke is not part of predicted_labels
-
-
-def assign_classification_labels(all_inkml, predicted_labels):
-    label_idx = 0
-
-    for inkml in all_inkml:
-        symbol_count = {}
-        for obj in inkml.objects:
-            label_symbol = predicted_labels[label_idx]
-
-            if label_symbol in symbol_count:
-                symbol_count[label_symbol] += 1
-            else:
-                symbol_count[label_symbol] = 1
-
-            object_id = label_symbol + '_' + str(symbol_count[label_symbol])
-            obj.set_details(object_id, label_symbol)
-
-            label_idx += 1
-
-
-def print_to_file(all_inkml, path):
-    #pr_utils.assign_classification_labels(all_inkml, predicted_labels)
-
-    pr_utils.print_to_file(all_inkml, 'test_out')
-
+    pr_utils.print_to_file(all_inkml, ar[0])
 
 
 if __name__ == '__main__':

@@ -1,3 +1,10 @@
+"""
+Modules for feature extraction for parsing
+
+@author: Ajinkya Dhaigude (ad8454@rit.edu)
+@author: Supriya Godge (spg5835@rit.edu)
+"""
+
 import math
 import numpy as np
 

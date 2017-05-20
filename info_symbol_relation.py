@@ -22,6 +22,3 @@ class SymbolRelation:
         self.object1 = object1
         self.object2 = object2
         self.label = label
-
-
-
