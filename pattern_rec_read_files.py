@@ -128,32 +128,6 @@ def add_ground_truth(inkml, soup, path_lg):
     return inkml
 
 
-
-'''
-def read_file_Traning(file_path):
-    """
-    Open and read an inkml file. Create an Inkml object with the
-    parsed information.
-
-    :param file_path: file path to inkml file
-    :return: Inkml object
-    """
-
-    # open and read file
-    soup = BeautifulSoup(open(file_path), 'lxml')
-
-    # parse file for UI. Return None if not found
-    file_truth = soup.find_all('annotation',{'type':'truth'})
-    if file_truth is not None:
-        symb=[]
-        for f in file_truth:
-            symb.append(f.string)
-    else:
-        print('Skipping file: ', file_path)
-    return symb[2:]
-'''
-
-
 def get_all_file_paths(root_path):
     """
     Generate a list of all valid inkml file paths
