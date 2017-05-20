@@ -44,7 +44,8 @@ def feature_extractor(all_inkml, training=False):
 
 def train_parser(inkml):
     for relation in inkml.relations:
-        pass
+        create_feature(relation.object1,relation.object2)
+
 
 def create_feature(symbol1,symbol2):
     pass
@@ -68,7 +69,7 @@ def distance(point1,point2):
 def find_distance(item, all_symbols):
     distances = []
     for current_point in all_symbols:
-        distances.append(distance(item,current_point))
+        distances.append(distance(item.boundingCenter,current_point.boundingCenter))
     return distances
 
 def feature_vertical_distance_between_boundingcenter(symb1,symb2):
