@@ -100,9 +100,11 @@ def create_feature(symbol1,symbol2,all_symb):
     other_symb = all_symb[:]
     other_symb.remove(symbol1)
     other_symb.remove(symbol2)
-    other_symb = [symb.strokes for symb in other_symb]
-    other_symb = convert_list(other_symb)
 
+    if len(other_symb) > 0:
+        other_symb = [symb.strokes for symb in other_symb][0]
+    else:
+        other_symb = [[]]
     feature_vector.append(feature_PSC(symbol1, symbol2,other_symb))
 
     return feature_vector
