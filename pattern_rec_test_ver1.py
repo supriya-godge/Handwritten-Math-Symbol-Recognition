@@ -44,9 +44,10 @@ def main(ar):
     pr_utils.move_coords_to_objects(all_inkml, pfe)
 
     feature_matrix = pfe.feature_extractor(all_inkml)
-    predicted_labels = classifiers.random_forest_test(parser_weights.RF, feature_matrix)
+    predicted_labels, probability = classifiers.random_forest_test_parsing(parser_weights.RF, feature_matrix)
 
-    pr_utils.assign_parsing_labels(all_inkml, predicted_labels)
+    pr_utils.assign_parsing_labels(all_inkml, predicted_labels,probability)
+    graph=pr_utils.create_graph(all_inkml)
 
     pr_utils.print_to_file(all_inkml, ar[1])
 

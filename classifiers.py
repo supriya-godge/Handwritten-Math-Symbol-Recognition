@@ -14,6 +14,11 @@ def random_forest_test(rf, test_features):
     prediction = rf.predict(test_features)
     return prediction
 
+def random_forest_test_parsing(rf, test_features):
+    prediction = rf.predict(test_features)
+    probability = rf.predict_proba(test_features)
+    return prediction,probability
+
 
 def kd_tree_train(train_features):
     kd = sklearn.neighbors.KDTree(train_features)

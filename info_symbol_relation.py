@@ -16,7 +16,7 @@ class SymbolRelation:
         self.object1 = object1
         self.object2 = object2
         self.label = label
-        self.weight = '1.0'
+        self.weight = -1.0
 
     def set_relation(self, object1, object2, label):
         self.object1 = object1

@@ -56,6 +56,19 @@ def scale_all_segments(all_inkml, max_coord):
                 inkml.strokes[trace_id] = symbol_strokes[index]
 
 
+def create_graph(all_inkml):
+    graph={}
+    for inkml in all_inkml:
+        for rel in inkml.relations:
+            if not graph[rel.object1] in graph:
+                graph[rel.object1]=[rel]
+            else:
+                graph[rel.object1]+=[rel]
+    return graph
+
+def MST(graph):
+    pass
+
 def get_scaled_symbol(strokes, max_coord, isSegment=False):
         """
         Scale all coordinates to a specified range.
@@ -262,11 +275,12 @@ def assign_classification_labels(all_inkml, predicted_labels):
             label_idx += 1
 
 
-def assign_parsing_labels(all_inkml, predicted_labels):
+def assign_parsing_labels(all_inkml, predicted_labels, probability):
     label_idx = 0
     for inkml in all_inkml:
         for rel in inkml.relations:
             rel.label = predicted_labels[label_idx]
+            rel.weight = max(probability[label_idx])
             label_idx += 1
 
 
