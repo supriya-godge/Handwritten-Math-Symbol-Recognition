@@ -57,8 +57,8 @@ def scale_all_segments(all_inkml, max_coord):
 
 
 def create_graph(all_inkml):
-    graph_outgoing={}
-    graph_incoming={}
+    graph_outgoing = {}
+    graph_incoming = {}
     for inkml in all_inkml:
         for rel in inkml.relations:
             if not rel.object1 in graph_outgoing:
@@ -71,7 +71,9 @@ def create_graph(all_inkml):
                 graph_incoming[rel.object2]+=[rel]
     return graph_outgoing,graph_incoming
 
-def MST(graph):
+def MST(all_inkml):
+
+    graph_outgoing, graph_incoming = create_graph(all_inkml)
     pass
 
 def get_scaled_symbol(strokes, max_coord, isSegment=False):
