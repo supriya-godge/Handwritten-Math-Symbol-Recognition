@@ -126,7 +126,7 @@ if __name__ == '__main__':
     if len(ar) == 4:
         main(ar[1:])
     else:
-        print('Incorrect arguments. \nUsage: pattern_rec_train.py <path to inkml files> <path to lg files>'
+        print('Incorrect arguments.\nUsage: pattern_rec_train.py <path to inkml files> <path to lg files>'
               ' <0:all 1:segment 2:classify 3:parse>')
         ar = input('Enter args: ').split()
         main(ar)

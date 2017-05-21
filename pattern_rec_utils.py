@@ -264,14 +264,10 @@ def assign_classification_labels(all_inkml, predicted_labels):
 
 def assign_parsing_labels(all_inkml, predicted_labels):
     label_idx = 0
-
     for inkml in all_inkml:
-        for index, obj in enumerate(inkml.objects):
-            if len(inkml.objects) > index+1:
-                next_obj = inkml.objects[index+1]
-                label_relation = predicted_labels[label_idx]
-                inkml.create_relation(obj, next_obj, label_relation)
-                label_idx += 1
+        for rel in inkml.relations:
+            rel.label = predicted_labels[label_idx]
+            label_idx += 1
 
 
 def print_to_file(all_inkml, path):

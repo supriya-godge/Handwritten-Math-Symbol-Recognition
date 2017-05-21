@@ -42,15 +42,15 @@ def feature_extractor(all_inkml, training=False):
 
     else:
         for inkml in all_inkml:
-            for index, obj in enumerate(inkml.objects)[:-1]:
-                # It will find the n nearest symbols and create a feature vector for
-                # a current symbol to all its nearest symbols.
+            for index, obj in enumerate(inkml.objects[:-1]):
                 closest_symbols = find_nearest(obj, inkml.objects[index + 1:], 2)
-                for close_symb in closest_symbols:
-                    feature_matrix.append(create_feature(obj, close_symb, inkml.objects))
-                    if not next_obj in close_symb:
-                        next_obj = inkml.objects[index+1]
-                        feature_matrix.append(create_feature(obj, next_obj, inkml.objects))
+                for close_symbol in closest_symbols:
+                    feature_matrix.append(create_feature(obj, close_symbol, inkml.objects))
+                    inkml.create_relation(obj, close_symbol)    # create potential relation
+                next_symbol = inkml.objects[index+1]
+                if not next_symbol in closest_symbols:
+                    feature_matrix.append(create_feature(obj, next_symbol, inkml.objects))
+                    inkml.create_relation(obj, next_symbol)     # create potential relation
         return np.asarray(feature_matrix)
 
 
