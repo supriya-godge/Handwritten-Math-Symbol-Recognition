@@ -57,14 +57,19 @@ def scale_all_segments(all_inkml, max_coord):
 
 
 def create_graph(all_inkml):
-    graph={}
+    graph_outgoing={}
+    graph_incoming={}
     for inkml in all_inkml:
         for rel in inkml.relations:
-            if not graph[rel.object1] in graph:
-                graph[rel.object1]=[rel]
+            if not rel.object1 in graph_outgoing:
+                graph_outgoing[rel.object1]=[rel]
             else:
-                graph[rel.object1]+=[rel]
-    return graph
+                graph_outgoing[rel.object1]+=[rel]
+            if not rel.object2 in graph_incoming:
+                graph_incoming[rel.object2] = [rel]
+            else:
+                graph_incoming[rel.object2]+=[rel]
+    return graph_outgoing,graph_incoming
 
 def MST(graph):
     pass

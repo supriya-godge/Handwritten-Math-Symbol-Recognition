@@ -47,7 +47,7 @@ def main(ar):
     predicted_labels, probability = classifiers.random_forest_test_parsing(parser_weights.RF, feature_matrix)
 
     pr_utils.assign_parsing_labels(all_inkml, predicted_labels,probability)
-    graph=pr_utils.create_graph(all_inkml)
+    graph_outgoing, graph_incoming = pr_utils.create_graph(all_inkml)
 
     pr_utils.print_to_file(all_inkml, ar[1])
 
