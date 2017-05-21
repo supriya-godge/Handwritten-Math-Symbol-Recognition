@@ -47,9 +47,14 @@ def main(ar):
     predicted_labels, probability = classifiers.random_forest_test_parsing(parser_weights.RF, feature_matrix)
 
     pr_utils.assign_parsing_labels(all_inkml, predicted_labels,probability)
-
-    pr_utils.MST(all_inkml)
-
+    print("Starting maximum spanning tree")
+    start = time.time()
+    for inkml in all_inkml:
+        print(inkml.ui)
+        print(inkml.relations)
+    pr_utils.create_MST_bruteForce(all_inkml)
+    end = time.time()
+    print("Time taken for MST:",(end-start)/60,"min")
     pr_utils.print_to_file(all_inkml, ar[1])
 
 

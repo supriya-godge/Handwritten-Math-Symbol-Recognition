@@ -22,3 +22,9 @@ class SymbolRelation:
         self.object1 = object1
         self.object2 = object2
         self.label = label
+
+    def __str__(self):
+        return self.object1.object_id+" "+self.object2.object_id+":"+self.label+":"+str(self.weight)
+
+    def __repr__(self):
+        return self.object1.object_id + " " + self.object2.object_id + ":" + self.label+":"+str(self.weight)
