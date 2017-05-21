@@ -59,7 +59,7 @@ def parse_train(all_inkml, max_coord):
     end = time.time()
     print("Time taken to train Random Forest:", round((end - start) / 60, 2), "min")
 
-    joblib.dump(trained_weights.TrainedWeights(rf), open('parse_weights_psc.p', 'wb'), compress=True)
+    joblib.dump(trained_weights.TrainedWeights(rf), open('parse_weights_norm.p', 'wb'), compress=True)
     print('Training complete. Model file saved to disk.')
 
 

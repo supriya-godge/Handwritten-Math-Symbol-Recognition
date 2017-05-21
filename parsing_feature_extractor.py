@@ -84,6 +84,10 @@ def create_feature(symbol1,symbol2,all_symb):
     for func in feature_functions:
         feature_vector += (func(symbol1,symbol2))
 
+    bb = bounding_box(symbol1.strokes + symbol2.strokes)
+    width = bb[1] - bb[0] if bb[1] - bb[0] != 0 else 1
+    feature_vector[:] = [x / width for x in feature_vector]
+
     other_symb = all_symb[:]
     other_symb.remove(symbol1)
     other_symb.remove(symbol2)
