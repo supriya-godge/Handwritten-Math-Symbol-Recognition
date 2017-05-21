@@ -33,22 +33,19 @@ def main(ar):
     print('Reading files into memory')
     all_inkml = pr_files.get_all_inkml_files(ar[0], True)
 
-    # scale coordinates in all Inkml objects
-    print('Scaling expression coordinates')
-    pr_utils.scale_all_inkml(all_inkml, max_coord)
-
     # scale each segmented object
     print('Scaling symbol coordinates')
     pr_utils.scale_all_segments(all_inkml, max_coord)
 
     pr_utils.move_coords_to_objects(all_inkml, pfe)
 
+    print('Start feature extraction for parsing')
     feature_matrix = pfe.feature_extractor(all_inkml)
     predicted_labels, probability = classifiers.random_forest_test_parsing(parser_weights.RF, feature_matrix)
 
     pr_utils.assign_parsing_labels(all_inkml, predicted_labels,probability)
 
-    pr_utils.MST(all_inkml)
+    #pr_utils.MST(all_inkml)
 
     pr_utils.print_to_file(all_inkml, ar[1])
 

@@ -230,9 +230,7 @@ def preprocessing(all_inkm):
                 inkml.strokes[key][index]=list((prev+current+next)/3)
 
 
-
 def assign_segmentation_labels(all_inkml, predicted_labels, strokes_to_consider):
-
     label_idx = 0
     for inkml in all_inkml:
         current_segment = []
@@ -298,10 +296,15 @@ def assign_classification_labels(all_inkml, predicted_labels):
 def assign_parsing_labels(all_inkml, predicted_labels, probability):
     label_idx = 0
     for inkml in all_inkml:
+        valid_relations = []
         for rel in inkml.relations:
             rel.label = predicted_labels[label_idx]
             rel.weight = max(probability[label_idx])
             label_idx += 1
+
+            if rel.label != 'Undefined':
+                valid_relations.append(rel)
+        inkml.relations = valid_relations
 
 
 def print_to_file(all_inkml, path):

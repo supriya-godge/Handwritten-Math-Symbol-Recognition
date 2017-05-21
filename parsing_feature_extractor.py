@@ -34,16 +34,32 @@ def feature_extractor(all_inkml, training=False):
 
     if training:
         for inkml in all_inkml:
+            gt_relations = {}
             for relation in inkml.relations:
                 feature_matrix.append(create_feature(relation.object1, relation.object2, inkml.objects))
                 GT.append(relation.label)
+
+                if relation.object1 in gt_relations:
+                    gt_relations[relation.object1].append(relation.object2)
+                else:
+                    gt_relations[relation.object1] = [relation.object2]
+
+            '''
+            # assign 'Undefined' for invalid nearest neighbors
+            for index, obj in enumerate(inkml.objects[:-1]):
+                closest_symbols = find_nearest(obj, inkml.objects[index+1:], 6)  # [index+1:]
+                for close_symbol in closest_symbols:
+                    if obj not in gt_relations or close_symbol not in gt_relations[obj]:
+                        feature_matrix.append(create_feature(obj, close_symbol, inkml.objects))
+                        GT.append('Undefined')
+            '''
 
         return np.asarray(feature_matrix), np.asarray(GT)
 
     else:
         for inkml in all_inkml:
             for index, obj in enumerate(inkml.objects[:-1]):
-                closest_symbols = find_nearest(obj, inkml.objects[index + 1:], 10)
+                closest_symbols = find_nearest(obj, inkml.objects[index+1:], 6)    # [index+1:]
                 for close_symbol in closest_symbols:
                     feature_matrix.append(create_feature(obj, close_symbol, inkml.objects))
                     inkml.create_relation(obj, close_symbol)    # create potential relation
@@ -63,10 +79,8 @@ def create_feature(symbol1,symbol2,all_symb):
                          feature_vertical_offset,
                          feature_writing_slop]
 
-    # TODO: feature_PSC
-
-    feature_vector=[]
-
+    feature_vector = []
+    #feature_functions = []
     for func in feature_functions:
         feature_vector += (func(symbol1,symbol2))
 
@@ -84,10 +98,9 @@ def create_feature(symbol1,symbol2,all_symb):
     return feature_vector
 
 
-
-def find_nearest(item,all_symbols, total):
-    distances = find_distance(item,all_symbols)
-    indices=np.asarray(distances).argsort()[:total]
+def find_nearest(item, all_symbols, total):
+    distances = find_distance(item, all_symbols)
+    indices = np.asarray(distances).argsort()[:total]
     nearest_symbol=[]
     for indi in indices:
         nearest_symbol.append(all_symbols[indi])
@@ -99,30 +112,36 @@ def distance(point1,point2):
     p2=np.asarray(point2)
     return np.sqrt(np.sum((p1-p2)**2))
 
-def manhatten_distance(sym1,sym2):
+
+def manhattan_distance(sym1,sym2):
     dist = sym1.boundingCenter[0]-sym2.boundingCenter[0]+sym1.boundingCenter[1]-sym2.boundingCenter[1]
     return dist
+
 
 def find_distance(item, all_symbols):
     distances = []
     for current_point in all_symbols:
-        distances.append(manhatten_distance(item,current_point))
+        distances.append(distance(item.boundingCenter,current_point.boundingCenter))
     return distances
+
 
 def feature_vertical_distance_between_boundingcenter(symb1,symb2):
     s1_center= symb1.boundingCenter
     s2_center= symb2.boundingCenter
     return [s1_center[0]-s2_center[0]]
 
+
 def feature_vertical_offset(symb1, symb2):
     s1 = symb1.boundingBox
     s2 = symb2.boundingBox
     return [s1[3] - s2[3],s1[3] - s2[2]]
 
+
 def feature_horizontal_distance_between_boundingcenter(symb1,symb2):
     s1_center= symb1.boundingCenter
     s2_center= symb2.boundingCenter
     return [s1_center[1]-s2_center[1]]
+
 
 def feature_corner_angle_with_center(symb1,symb2):
     angle_list = []
@@ -132,13 +151,13 @@ def feature_corner_angle_with_center(symb1,symb2):
     angle_list.append(angle_between_two_points([symb1.boundingBox[1], symb1.boundingBox[3]], symb2.boundingCenter))
     return angle_list
 
+
 def angle_between_two_points(point1,point2):
     co = np.dot(point1,point2)
     sin = np.linalg.norm(np.cross(point1,point2))
     angle = np.arctan2(co, sin)
     angle = round_angle(angle,30)
     return angle
-
 
 
 def feature_distance_between_bounding_center(symb1,symb2):
@@ -152,6 +171,7 @@ def feature_writing_slop(sym1,sym2):
     angle = round_angle(angle,30)
     return [angle]
 
+
 def round_angle(angle,rnd):
     angle = math.degrees(angle + 360) % 360
     angle = round(angle * rnd) // rnd
@@ -164,8 +184,6 @@ def feature_angle_bounding_center(symb1,symb2):
     angle = math.atan2(s2[1] - s1[1], s2[0] - s1[0])
     angle = round_angle(angle, 30)
     return [angle]
-
-
 
 
 def feature_PSC(symb1,symb2,all_other_symb):
