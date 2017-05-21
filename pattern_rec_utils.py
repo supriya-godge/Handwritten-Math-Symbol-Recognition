@@ -91,10 +91,24 @@ def create_MST_bruteForce(all_inkml):
         all_edges = get_edges(inkml)
         graph_outgoing, graph_incoming=create_graph(all_edges)
         cost,mst = MST_recurse([],nodes,graph_outgoing,[nodes[0]],0)
+        not_visited = checkallNodeVisited(mst,nodes[1:])
+        if len(not_visited)!=0:
+            for iter in not_visited:
+                max_edge = graph_incoming[not_visited[iter]].sort(key=lambda k:k.weight)[0]
+                mst.append(max_edge)
+
+
         inkml.relations = mst
 
+def checkallNodeVisited(mst,nodes):
+    graph_outgoing, graph_incoming = create_graph(mst)
+    total_nodes = set(nodes)
+    visited_nodes = set(graph_incoming.keys())
+    not_visited = total_nodes - visited_nodes
+    return not_visited
 
-def create_MST_kruskal(all_inkml):
+
+
 
 
 
