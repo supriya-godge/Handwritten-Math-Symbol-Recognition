@@ -57,22 +57,28 @@ def scale_all_segments(all_inkml, max_coord):
 
 
 def create_graph(all_inkml):
-    graph_outgoing={}
-    graph_incoming={}
+    all_edges=[]
     for inkml in all_inkml:
         for rel in inkml.relations:
-            if not rel.object1 in graph_outgoing:
-                graph_outgoing[rel.object1]=[rel]
-            else:
-                graph_outgoing[rel.object1]+=[rel]
-            if not rel.object2 in graph_incoming:
-                graph_incoming[rel.object2] = [rel]
-            else:
-                graph_incoming[rel.object2]+=[rel]
-    return graph_outgoing,graph_incoming
+            all_edges.append(rel)
+    return all_edges
 
-def MST(graph):
+def MST(all_edges):
     pass
+
+def create_graph(edges):
+    graph_outgoing={}
+    graph_incoming={}
+    for rel in edges:
+        if not rel.object1 in graph_outgoing:
+            graph_outgoing[rel.object1] = [rel]
+        else:
+            graph_outgoing[rel.object1] += [rel]
+        if not rel.object2 in graph_incoming:
+            graph_incoming[rel.object2] = [rel]
+        else:
+            graph_incoming[rel.object2] += [rel]
+    return graph_outgoing,graph_incoming
 
 def get_scaled_symbol(strokes, max_coord, isSegment=False):
         """
