@@ -43,7 +43,7 @@ def feature_extractor(all_inkml, training=False):
     else:
         for inkml in all_inkml:
             for index, obj in enumerate(inkml.objects[:-1]):
-                closest_symbols = find_nearest(obj, inkml.objects[index + 1:], 6)
+                closest_symbols = find_nearest(obj, inkml.objects[index + 1:], 10)
                 for close_symbol in closest_symbols:
                     feature_matrix.append(create_feature(obj, close_symbol, inkml.objects))
                     inkml.create_relation(obj, close_symbol)    # create potential relation
