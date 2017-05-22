@@ -12,6 +12,7 @@ import math
 import segment_feature_extractor as sfe
 global max_coord
 
+
 def get_training_matrix(all_inkml, local_max_coord, functions_online, functions_offline):
     """
     Get a matrix with feature vectors for training.

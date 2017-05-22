@@ -7,6 +7,7 @@ Modules for feature extraction for parsing
 
 import math
 import numpy as np
+import cv2
 
 
 def bounding_box(strokes):

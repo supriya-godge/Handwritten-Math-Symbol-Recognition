@@ -45,7 +45,7 @@ def parse_train(all_inkml, max_coord):
 
     #np.savetxt('parsing_feature_matrix.csv', feature_matrix, delimiter=',')
 
-    parser_weights = joblib.load(open('parse_weights_norm.p', "rb"))
+    parser_weights = joblib.load(open('parse_weights_scale.p', "rb"))
     predicted_labels, probability = classifiers.random_forest_test_parsing(parser_weights.RF, feature_matrix)
 
     pr_utils.assign_parsing_labels(all_inkml, predicted_labels, probability)

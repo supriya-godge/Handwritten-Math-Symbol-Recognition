@@ -29,11 +29,12 @@ def main(ar):
     print('Reading files into memory')
     all_inkml = pr_files.get_all_inkml_files(path, True, path_lg)
 
+    # scale coordinates in all Inkml objects
+    print('Scaling expression coordinates')
+    pr_utils.scale_all_inkml(all_inkml, max_coord)
+
     if not mode or mode == 1:   # not 0 = True
         segment_train(all_inkml, max_coord)
-
-    print('Scaling symbol coordinates')
-    pr_utils.scale_all_segments(all_inkml, max_coord)
 
     if not mode or mode == 2:
         classify_train(all_inkml, max_coord)
@@ -59,15 +60,12 @@ def parse_train(all_inkml, max_coord):
     end = time.time()
     print("Time taken to train Random Forest:", round((end - start) / 60, 2), "min")
 
-    joblib.dump(trained_weights.TrainedWeights(rf), open('parse_weights_norm.p', 'wb'), compress=True)
+    joblib.dump(trained_weights.TrainedWeights(rf), open('parse_weights_scale.p', 'wb'), compress=True)
     print('Training complete. Model file saved to disk.')
 
 
 def segment_train(all_inkml, max_coord):
 
-    # scale coordinates in all Inkml objects
-    print('Scaling expression coordinates')
-    pr_utils.scale_all_inkml(all_inkml, max_coord)
 
     #print('Start pre-processing for segmentation..')
     #pr_utils.preprocessing(all_inkml)
@@ -92,6 +90,9 @@ def segment_train(all_inkml, max_coord):
 
 
 def classify_train(all_inkml, max_coord):
+    print('Scaling symbol coordinates')
+    pr_utils.scale_all_segments(all_inkml, max_coord)
+
     # get feature matrix for classifier training
     print('Start feature extraction for classifier..')
 
