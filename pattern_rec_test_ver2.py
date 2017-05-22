@@ -37,14 +37,12 @@ def main(ar):
     print('Scaling expression coordinates')
     pr_utils.scale_all_inkml(all_inkml, max_coord)
 
-    # preprocessing all Inkml object strokes
-    #print('Start pre-processing..')
-    #pr_utils.preprocessing(all_inkml)
-
     # segment into objects
     print('Start feature extraction for segmentation..')
     feature_matrix, strokes_to_consider = seg_fe.feature_extractor(all_inkml)
     predicted_labels = classifiers.random_forest_test(segment_weights.RF, feature_matrix)
+
+    print('Assigning segmentation labels..')
     pr_utils.assign_segmentation_labels(all_inkml, predicted_labels, strokes_to_consider)
 
     # scale each segmented object
@@ -59,12 +57,15 @@ def main(ar):
                                                             max_coord,
                                                             online_features,
                                                             offline_functions)
+
     predicted_labels = classifiers.random_forest_test(classify_weights.RF, feature_matrix)
 
+    print('Assigning classifier labels..')
     pr_utils.assign_classification_labels(all_inkml, predicted_labels)
 
     pr_utils.move_coords_to_objects(all_inkml, pfe)
 
+    print('Reverting back to expression scaling..')
     for inkml in all_inkml:
         inkml.revert_strokes()      # revert back to expression scaling
 

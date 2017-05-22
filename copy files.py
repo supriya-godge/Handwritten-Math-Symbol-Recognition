@@ -4,11 +4,11 @@ import shutil
 
 
 path="E:/PaternRec/Project2/GT_LG_Paridhi/"
-for fileName in os.listdir("E:/PaternRec/Project2/temp"):
+for fileName in os.listdir("E:\PaternRec\Project2\Paridhi_training"):
         try:
              fileName=fileName.replace(".inkml","")
              #w= open(path + fileName+)
-             shutil.copy2(path + fileName+".lg", "E:/PaternRec/Project2/temp_lg")
+             shutil.copy2(path + fileName+".lg", "E:\PaternRec\Project2\Paridhi_traning_ls")
         except:
                 print("File not found",fileName)
 '''

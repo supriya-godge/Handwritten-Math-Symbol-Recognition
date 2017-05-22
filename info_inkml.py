@@ -63,8 +63,8 @@ class Inkml:
         self.objects.sort(key=lambda x: float(min(x.trace_ids, key=float)))
 
     def __str__(self):
-        return self.objects.__str__()
+        return self.relations.__str__()
 
     def __repr__(self):
-        return self.objects.__repr__()
+        return self.relations.__repr__()
 
