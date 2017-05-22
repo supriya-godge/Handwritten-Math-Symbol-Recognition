@@ -98,6 +98,7 @@ def create_MST_bruteForce(all_inkml):
                 graph_incoming[iter].sort(key=lambda k:k.weight)
                 max_edge = graph_incoming[iter][0]
                 mst.append(max_edge)
+
         not_visited = checkallNodeVisited(mst,nodes[1:])
         print("Not visited post:",not_visited)
 
