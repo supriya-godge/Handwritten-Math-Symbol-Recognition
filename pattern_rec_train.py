@@ -29,48 +29,21 @@ def main(ar):
     print('Reading files into memory')
     all_inkml = pr_files.get_all_inkml_files(path, True, path_lg)
 
+    # scale coordinates in all Inkml objects
+    print('Scaling expression coordinates')
+    pr_utils.scale_all_inkml(all_inkml, max_coord)
+
     if not mode or mode == 1:   # not 0 = True
         segment_train(all_inkml, max_coord)
 
-    print('Scaling symbol coordinates')
-    pr_utils.scale_all_segments(all_inkml, max_coord)
-
     if not mode or mode == 2:
         classify_train(all_inkml, max_coord)
-
-    pr_utils.move_coords_to_objects(all_inkml, pfe)
 
     if not mode or mode == 3:
         parse_train(all_inkml, max_coord)
 
 
-def parse_train(all_inkml, max_coord):
-    print('Start feature extraction for parsing..')
-    start = time.time()
-    feature_matrix, truth_labels = pfe.feature_extractor(all_inkml, training=True)
-    end = time.time()
-    print("Time taken to extract the features for parsing:", round((end - start) / 60), "min")
-
-    #np.savetxt('parsing_feature_matrix.csv', feature_matrix, delimiter=',')
-
-    start = time.time()
-    rf = classifiers.random_forest_train(feature_matrix,
-                                         truth_labels)
-    end = time.time()
-    print("Time taken to train Random Forest:", round((end - start) / 60, 2), "min")
-
-    joblib.dump(trained_weights.TrainedWeights(rf), open('parse_weights_psc.p', 'wb'), compress=True)
-    print('Training complete. Model file saved to disk.')
-
-
 def segment_train(all_inkml, max_coord):
-
-    # scale coordinates in all Inkml objects
-    print('Scaling expression coordinates')
-    pr_utils.scale_all_inkml(all_inkml, max_coord)
-
-    #print('Start pre-processing for segmentation..')
-    #pr_utils.preprocessing(all_inkml)
 
     # segment into objects
     print('Start feature extraction for segmentation..')
@@ -92,6 +65,9 @@ def segment_train(all_inkml, max_coord):
 
 
 def classify_train(all_inkml, max_coord):
+    print('Scaling symbol coordinates')
+    pr_utils.scale_all_segments(all_inkml, max_coord)
+
     # get feature matrix for classifier training
     print('Start feature extraction for classifier..')
 
@@ -115,10 +91,30 @@ def classify_train(all_inkml, max_coord):
     joblib.dump(trained_weights.TrainedWeights(rf), open('classify_weights.p', 'wb'), compress=True)
     print('Training complete. Model file saved to disk.')
 
-    # view symbols
-    #pr_utils.print_view_symbols_html(all_inkml, max_coord)
 
-    #pr_utils.print_to_lg(all_inkml)
+def parse_train(all_inkml, max_coord):
+    print('Reverting back to expression scaling..')
+    for inkml in all_inkml:
+        inkml.revert_strokes()  # revert back to expression scaling
+
+    pr_utils.move_coords_to_objects(all_inkml, pfe)
+
+    print('Start feature extraction for parsing..')
+    start = time.time()
+    feature_matrix, truth_labels = pfe.feature_extractor(all_inkml, training=True)
+    end = time.time()
+    print("Time taken to extract the features for parsing:", round((end - start) / 60), "min")
+
+    #np.savetxt('parsing_feature_matrix.csv', feature_matrix, delimiter=',')
+
+    start = time.time()
+    rf = classifiers.random_forest_train(feature_matrix,
+                                         truth_labels)
+    end = time.time()
+    print("Time taken to train Random Forest:", round((end - start) / 60, 2), "min")
+
+    joblib.dump(trained_weights.TrainedWeights(rf), open('parse_weights.p', 'wb'), compress=True)
+    print('Training complete. Model file saved to disk.')
 
 
 if __name__ == '__main__':

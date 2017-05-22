@@ -5,7 +5,7 @@ Utility modules for various Pattern Recognition functions
 @author: Supriya Godge (spg5835@rit.edu)
 """
 import numpy as np
-
+import collections
 
 def scale_all_inkml(all_inkml, max_coord):
     """
@@ -63,7 +63,72 @@ def get_edges(inkml):
     return all_edges
 
 
-def MST(all_inkml):
+def MST_recurse(MST, nodes, graph_outgoing,visited,cost):
+    if len(nodes)<=1:
+        return cost,MST
+    all_edges = graph_outgoing[nodes[0]]
+    #visited.append(nodes[0])
+    nodes.pop(0)
+    all_edges.sort(key=lambda k:k.weight, reverse=True)
+    final_cost = cost
+    final_MST = MST
+    for edge in all_edges:
+        if not edge.object2.object_id in visited:
+            new_cost,new_MST = MST_recurse(MST[:]+[edge], nodes, graph_outgoing, visited[:]+[edge.object2.object_id],
+                                           cost+edge.weight)
+            if new_cost >= final_cost:
+                final_cost = new_cost
+                final_MST = new_MST
+    #print(final_cost," ",final_MST)
+    return final_cost,final_MST
+
+
+def create_MST_bruteForce2(all_inkml):
+    for inkml in all_inkml:
+        nodes = [obj.object_id for obj in inkml.objects]
+        all_edges = get_edges(inkml)
+        graph_outgoing, graph_incoming=create_graph(all_edges)
+        mst = []
+        for node in nodes:
+            if node in graph_incoming:
+                max_edge = graph_incoming[node].sort(key=lambda k: k.weight)
+                max_edge = max_edge[0]
+                mst.append(max_edge)
+        inkml.relations = mst
+
+
+
+
+
+def create_MST_bruteForce(all_inkml):
+    for inkml in all_inkml:
+        nodes = [obj.object_id for obj in inkml.objects]
+        all_edges = get_edges(inkml)
+        graph_outgoing, graph_incoming=create_graph(all_edges)
+        cost,mst = MST_recurse([],nodes,graph_outgoing,[nodes[0]],0)
+        not_visited = checkallNodeVisited(mst,nodes[1:])
+        if len(not_visited)!=0:
+            for iter in not_visited:
+                max_edge = graph_incoming[not_visited[iter]].sort(key=lambda k:k.weight)[0]
+                mst.append(max_edge)
+
+
+        inkml.relations = mst
+
+def checkallNodeVisited(mst,nodes):
+    graph_outgoing, graph_incoming = create_graph(mst)
+    total_nodes = set(nodes)
+    visited_nodes = set(graph_incoming.keys())
+    not_visited = total_nodes - visited_nodes
+    return not_visited
+
+
+
+
+
+
+"""
+def create_MST(all_inkml):
     for inkml in all_inkml:
         tot_nodes = len(inkml.objects)
         all_edges = get_edges(inkml)
@@ -71,23 +136,30 @@ def MST(all_inkml):
         graph_outgoing, graph_incoming = create_graph(max_edges)
 
         # detect cycle
-        all_nodes = max_edges
+        reachable_node=set()
+        for rel in max_edges:
+            reachable_node.add(rel.object2.object_id)
 
-    pass
+        if len(reachable_node) == tot_nodes-1:
+        # This means it is a valid MST
+            return graph_outgoing,graph_incoming
+"""
 
 def create_graph(edges):
-    graph_outgoing={}
-    graph_incoming={}
+    graph_outgoing=collections.OrderedDict()
+    graph_incoming=collections.OrderedDict()
     for rel in edges:
-        if not rel.object1 in graph_outgoing:
-            graph_outgoing[rel.object1] = [rel]
+        if  rel.object1.object_id not in graph_outgoing:
+            graph_outgoing[rel.object1.object_id] = [rel]
         else:
-            graph_outgoing[rel.object1] += [rel]
-        if not rel.object2 in graph_incoming:
-            graph_incoming[rel.object2] = [rel]
+            graph_outgoing[rel.object1.object_id] += [rel]
+        if  rel.object2.object_id not in graph_incoming:
+            graph_incoming[rel.object2.object_id] = [rel]
         else:
-            graph_incoming[rel.object2] += [rel]
+            graph_incoming[rel.object2.object_id] += [rel]
     return graph_outgoing,graph_incoming
+
+
 
 def get_scaled_symbol(strokes, max_coord, isSegment=False):
         """

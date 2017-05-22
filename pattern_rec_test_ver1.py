@@ -33,9 +33,9 @@ def main(ar):
     print('Reading files into memory')
     all_inkml = pr_files.get_all_inkml_files(ar[0], True)
 
-    # scale each segmented object
-    print('Scaling symbol coordinates')
-    pr_utils.scale_all_segments(all_inkml, max_coord)
+    # scale coordinates in all Inkml objects
+    print('Scaling expression coordinates')
+    pr_utils.scale_all_inkml(all_inkml, max_coord)
 
     pr_utils.move_coords_to_objects(all_inkml, pfe)
 
@@ -43,9 +43,14 @@ def main(ar):
     feature_matrix = pfe.feature_extractor(all_inkml)
     predicted_labels, probability = classifiers.random_forest_test_parsing(parser_weights.RF, feature_matrix)
 
+    print('Assigning parser labels..')
     pr_utils.assign_parsing_labels(all_inkml, predicted_labels,probability)
 
-    #pr_utils.MST(all_inkml)
+    print("Computing maximum spanning tree")
+    start = time.time()
+    pr_utils.create_MST_bruteForce2(all_inkml)
+    end = time.time()
+    print("Time taken for MST:",(end-start)/60,"min")
 
     pr_utils.print_to_file(all_inkml, ar[1])
 
@@ -55,7 +60,7 @@ if __name__ == '__main__':
     if len(ar) == 4:
         main(ar[1:])
     else:
-        print('Incorrect arguments. \nUsage: segment_test.py <path to inkml files> <path to output dir> '
+        print('Incorrect arguments. \nUsage: pattern_rec_test_ver1.py <path to inkml files> <path to output dir> '
               '<parser model file>')
-        ar = input('Enter args: ').split(' ')   #testing_inkml test_out parse_weights.p
+        ar = input('Enter args: ').split(' ')
         main(ar)

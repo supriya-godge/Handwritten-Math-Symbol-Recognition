@@ -18,6 +18,7 @@ class Inkml:
     def __init__(self, ui):
         self.ui = ui
         self.strokes = collections.OrderedDict()
+        self.backup_strokes = collections.OrderedDict()     # backs up scaled expression coords
         self.objects = []
         self.relations = []
 
@@ -26,7 +27,11 @@ class Inkml:
 
     def update_strokes(self, scaled_coords):
         for index, trace_id in enumerate(self.strokes):
+            self.backup_strokes[trace_id] = self.strokes[trace_id]
             self.strokes[trace_id] = scaled_coords[index]
+
+    def revert_strokes(self):
+        self.strokes = self.backup_strokes
 
     def create_object(self, trace_ids):
         obj = SymbolObject(trace_ids)
@@ -58,8 +63,8 @@ class Inkml:
         self.objects.sort(key=lambda x: float(min(x.trace_ids, key=float)))
 
     def __str__(self):
-        return self.objects.__str__()
+        return self.relations.__str__()
 
     def __repr__(self):
-        return self.objects.__repr__()
+        return self.relations.__repr__()
 
