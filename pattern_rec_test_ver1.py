@@ -48,7 +48,7 @@ def main(ar):
 
     print("Computing maximum spanning tree")
     start = time.time()
-    pr_utils.create_MST_bruteForce(all_inkml)
+    pr_utils.create_MST_bruteForce2(all_inkml)
     end = time.time()
     print("Time taken for MST:",(end-start)/60,"min")
 
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     if len(ar) == 4:
         main(ar[1:])
     else:
-        print('Incorrect arguments. \nUsage: segment_test.py <path to inkml files> <path to output dir> '
+        print('Incorrect arguments. \nUsage: pattern_rec_test_ver1.py <path to inkml files> <path to output dir> '
               '<parser model file>')
-        ar = input('Enter args: ').split(' ')   #testing_inkml test_out parse_weights.p
+        ar = input('Enter args: ').split(' ')
         main(ar)

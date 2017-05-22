@@ -83,6 +83,21 @@ def MST_recurse(MST, nodes, graph_outgoing,visited,cost):
     return final_cost,final_MST
 
 
+def create_MST_bruteForce2(all_inkml):
+    for inkml in all_inkml:
+        nodes = [obj.object_id for obj in inkml.objects]
+        all_edges = get_edges(inkml)
+        graph_outgoing, graph_incoming=create_graph(all_edges)
+        mst = []
+        for node in nodes:
+            if node in graph_incoming:
+                max_edge = graph_incoming[node].sort(key=lambda k: k.weight)
+                max_edge = max_edge[0]
+                mst.append(max_edge)
+        inkml.relations = mst
+
+
+
 
 
 def create_MST_bruteForce(all_inkml):
