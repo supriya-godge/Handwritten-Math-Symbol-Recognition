@@ -90,13 +90,16 @@ def create_MST_bruteForce(all_inkml):
         nodes = [obj.object_id for obj in inkml.objects]
         all_edges = get_edges(inkml)
         graph_outgoing, graph_incoming=create_graph(all_edges)
-        cost,mst = MST_recurse([],nodes,graph_outgoing,[nodes[0]],0)
-        not_visited = checkallNodeVisited(mst,nodes[1:])
+        cost,mst = MST_recurse([],nodes[:],graph_outgoing,[nodes[0]],0)
+        not_visited = list(checkallNodeVisited(mst,nodes[1:]))
+        print("Not visited prev:",not_visited)
         if len(not_visited)!=0:
             for iter in not_visited:
-                max_edge = graph_incoming[not_visited[iter]].sort(key=lambda k:k.weight)[0]
+                graph_incoming[iter].sort(key=lambda k:k.weight)
+                max_edge = graph_incoming[iter][0]
                 mst.append(max_edge)
-
+        not_visited = checkallNodeVisited(mst,nodes[1:])
+        print("Not visited post:",not_visited)
 
         inkml.relations = mst
 
@@ -108,27 +111,38 @@ def checkallNodeVisited(mst,nodes):
     return not_visited
 
 
+def findCycle(mst_graph_outgoing, mst_graph_outgoing1):
+    pass
+
+def contract(mst_graph_outgoing,mst_graph_incoming,cycle):
+    pass
 
 
-
-
-"""
-def create_MST(all_inkml):
+def create_Edmon_MST(all_inkml):
     for inkml in all_inkml:
         tot_nodes = len(inkml.objects)
-        all_edges = get_edges(inkml)
-        max_edges = sorted(all_edges, key=lambda edge: edge.weight)[:tot_nodes]
-        graph_outgoing, graph_incoming = create_graph(max_edges)
-
+        nodes = [obj.object_id for obj in inkml.objects]
+        mst = addMaxEdgeFromEveryVertex(inkml,nodes)
+        mst_graph_outgoing, mst_graph_incoming = create_graph(mst)
         # detect cycle
-        reachable_node=set()
-        for rel in max_edges:
-            reachable_node.add(rel.object2.object_id)
+        reachable_node=set(mst_graph_incoming.keys())
+        starting_node = set(mst_graph_outgoing.keys())
+        if len(reachable_node)==tot_nodes-1 and len(starting_node)==tot_nodes-1:
+            #This means it is valid MST
+            inkml.relations = mst
+        else:
+            cycle = findCycle(mst_graph_outgoing, mst_graph_outgoing)
+            GC,c,ma = contract(mst_graph_outgoing,mst_graph_incoming,cycle)
 
-        if len(reachable_node) == tot_nodes-1:
-        # This means it is a valid MST
-            return graph_outgoing,graph_incoming
-"""
+
+def addMaxEdgeFromEveryVertex(inkml,nodes):
+    mst=[]
+    all_edges = get_edges(inkml)
+    graph_outgoing, graph_incoming = create_graph(all_edges)
+    for node in nodes:
+        graph_incoming[node].sort(key=lambda k: k.weight)
+        mst.append(graph_incoming[node][0])
+    return mst
 
 def create_graph(edges):
     graph_outgoing=collections.OrderedDict()

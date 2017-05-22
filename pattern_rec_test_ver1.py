@@ -38,8 +38,8 @@ def main(ar):
     pr_utils.scale_all_inkml(all_inkml, max_coord)
 
     # scale each segmented object
-    print('Scaling symbol coordinates')
-    pr_utils.scale_all_segments(all_inkml, max_coord)
+    #print('Scaling symbol coordinates')
+    #pr_utils.scale_all_segments(all_inkml, max_coord)
 
     pr_utils.move_coords_to_objects(all_inkml, pfe)
 
@@ -49,9 +49,6 @@ def main(ar):
     pr_utils.assign_parsing_labels(all_inkml, predicted_labels,probability)
     print("Starting maximum spanning tree")
     start = time.time()
-    for inkml in all_inkml:
-        print(inkml.ui)
-        print(inkml.relations)
     pr_utils.create_MST_bruteForce(all_inkml)
     end = time.time()
     print("Time taken for MST:",(end-start)/60,"min")
