@@ -37,6 +37,7 @@ def main(ar):
     print('Scaling expression coordinates')
     pr_utils.scale_all_inkml(all_inkml, max_coord)
 
+
     pr_utils.move_coords_to_objects(all_inkml, pfe)
 
     print('Start feature extraction for parsing')
@@ -48,7 +49,9 @@ def main(ar):
 
     print("Computing maximum spanning tree")
     start = time.time()
-    pr_utils.create_MST_bruteForce2(all_inkml)
+
+    pr_utils.create_MST_bruteForce(all_inkml)
+
     end = time.time()
     print("Time taken for MST:",(end-start)/60,"min")
 
